@@ -10,11 +10,13 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
+import frc.robot.subsystems.vision.Vision;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -40,10 +42,11 @@ public class RobotContainer {
 
   // Subsystems Intialization
 	public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain(); // Creates Drivetrain and configures Autobuilder settings
+	public final Vision vision = new Vision("Arducam_OV9821");
 
 
   // Path follower
-	private final SendableChooser<Command> autoChooser;
+	private SendableChooser<Command> autoChooser;
 
 
   // Manual Override and Encoder Reset
@@ -65,9 +68,25 @@ public class RobotContainer {
 		configureDriveBindings(true); // False to disable driving
     configureOperatorBindings(false); // False to disable operator controls
 
-    // Setup the auto chooser
-    autoChooser = AutoBuilder.buildAutoChooser("Drive Straight"); // Default auto program to run
-		SmartDashboard.putData("Auto Mode", autoChooser);
+    // Connect vision subsystem to drivetrain for pose estimation
+    drivetrain.setVisionSubsystem(vision);
+
+    // Setup the auto chooser (only if PathPlanner is configured)
+    if (drivetrain.isAutoBuilderConfigured()) {
+      try {
+        autoChooser = AutoBuilder.buildAutoChooser("Drive Straight"); // Default auto program to run
+        SmartDashboard.putData("Auto Mode", autoChooser);
+      } catch (Exception e) {
+        DriverStation.reportError("Failed to build PathPlanner auto chooser: " + e.getMessage(), e.getStackTrace());
+        autoChooser = new SendableChooser<Command>();
+        SmartDashboard.putData("Auto Mode", autoChooser);
+      }
+    } else {
+      // PathPlanner not configured - create empty chooser
+      autoChooser = new SendableChooser<Command>();
+      SmartDashboard.putData("Auto Mode", autoChooser);
+      DriverStation.reportWarning("PathPlanner not configured. Auto chooser is empty. Configure PathPlanner in the PathPlanner GUI to enable autonomous paths.", false);
+    }
   } // End RobotContainer
 
 
@@ -176,10 +195,13 @@ public class RobotContainer {
   /**
    * Run the path selected from the auto chooser
    *
-   * @return the command to run in autonomous
+   * @return the command to run in autonomous, or null if PathPlanner is not configured
    */
   public Command getAutonomousCommand() {
-    return autoChooser.getSelected();
+    if (autoChooser != null) {
+      return autoChooser.getSelected();
+    }
+    return null; // PathPlanner not configured, no autonomous command available
   } // End getAutonomousCommand
 
   /**
