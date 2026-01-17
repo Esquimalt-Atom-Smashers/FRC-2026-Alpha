@@ -175,8 +175,8 @@ task(eventDeploy) {
 }
 createVersionFile.dependsOn(eventDeploy)
 
-// Spotless formatting
-project.compileJava.dependsOn(spotlessApply)
+// Spotless formatting (disabled - using Prettier instead)
+// project.compileJava.dependsOn(spotlessApply)
 spotless {
     java {
         target fileTree(".") {
@@ -214,5 +214,12 @@ spotless {
         trimTrailingWhitespace()
         indentWithSpaces(2)
         endWithNewline()
+    }
+}
+
+// Disable all Spotless check tasks (formatting checks disabled)
+afterEvaluate {
+    tasks.matching { it.name.startsWith('spotless') && it.name.endsWith('Check') }.configureEach {
+        enabled = false
     }
 }
