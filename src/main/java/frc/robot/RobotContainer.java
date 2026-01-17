@@ -24,6 +24,9 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 
 public class RobotContainer {
+  // Vision-only mode: Set to true to skip hardware initialization
+  private static final boolean VISION_ONLY_MODE = true; // Set to false for full robot operation
+
   // Swerve Drive constants
 	private final double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts top speed possible at 12 volts
 	private final double MAX_ANGULAR_RATE = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second, max angular velocity
@@ -41,7 +44,7 @@ public class RobotContainer {
   private static final double XBOX_DEADBAND = 0.09;
 
   // Subsystems Intialization
-	public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain(); // Creates Drivetrain and configures Autobuilder settings
+	public final CommandSwerveDrivetrain drivetrain = VISION_ONLY_MODE ? null : TunerConstants.createDrivetrain(); // Creates Drivetrain and configures Autobuilder settings
 	public final Vision vision = new Vision("Arducam_OV9821");
 
 
@@ -64,15 +67,16 @@ public class RobotContainer {
     // Register the named commands for Auto
     registerCommands();
 
-    // Configure the trigger bindings
-		configureDriveBindings(true); // False to disable driving
-    configureOperatorBindings(false); // False to disable operator controls
+    // Configure the trigger bindings (skip if vision-only mode)
+    if (!VISION_ONLY_MODE) {
+      configureDriveBindings(true); // False to disable driving
+      configureOperatorBindings(false); // False to disable operator controls
 
-    // Connect vision subsystem to drivetrain for pose estimation
-    drivetrain.setVisionSubsystem(vision);
+      // Connect vision subsystem to drivetrain for pose estimation
+      drivetrain.setVisionSubsystem(vision);
 
-    // Setup the auto chooser (only if PathPlanner is configured)
-    if (drivetrain.isAutoBuilderConfigured()) {
+      // Setup the auto chooser (only if PathPlanner is configured)
+      if (drivetrain.isAutoBuilderConfigured()) {
       try {
         autoChooser = AutoBuilder.buildAutoChooser("Drive Straight"); // Default auto program to run
         SmartDashboard.putData("Auto Mode", autoChooser);
@@ -86,6 +90,10 @@ public class RobotContainer {
       autoChooser = new SendableChooser<Command>();
       SmartDashboard.putData("Auto Mode", autoChooser);
       DriverStation.reportWarning("PathPlanner not configured. Auto chooser is empty. Configure PathPlanner in the PathPlanner GUI to enable autonomous paths.", false);
+      }
+    } else {
+      // Vision-only mode: Skip drivetrain initialization
+      DriverStation.reportWarning("Vision-only mode enabled. Drivetrain hardware initialization skipped to suppress CAN errors.", false);
     }
   } // End RobotContainer
 
@@ -138,13 +146,19 @@ public class RobotContainer {
 
 
   /**
-   * Prints the current pose of the robot to the console.
+   * Prints the current odometry pose of the robot to the console.
    */
   public void printPose(){
-    Pose2d robotPose = drivetrain.getState().Pose;
-    System.out.println("x " + robotPose.getX());
-    System.out.println("y " + robotPose.getY());
-    System.out.println("rot " + robotPose.getRotation());
+    if (drivetrain != null) {
+      Pose2d robotPose = drivetrain.getState().Pose;
+      System.out.println("=== Odometry Pose ===");
+      System.out.println("  X: " + String.format("%.3f", robotPose.getX()) + " m");
+      System.out.println("  Y: " + String.format("%.3f", robotPose.getY()) + " m");
+      System.out.println("  Rotation: " + String.format("%.2f", robotPose.getRotation().getDegrees()) + " deg");
+      System.out.println("====================");
+    } else {
+      System.out.println("Odometry: Drivetrain not initialized (vision-only mode)");
+    }
   } // End printPose
 
 
