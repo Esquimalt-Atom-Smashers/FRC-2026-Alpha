@@ -7,8 +7,6 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.*;
-
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -186,7 +184,8 @@ public class RobotContainer {
             () -> -driverController.getRightX(), // Omega (rotation)
             () -> driverController.getRightTriggerAxis(), // Turbo
             () -> isFacingHub, // Face-target enabled
-            faceTargetController));
+            faceTargetController,
+            false)); // usePhysicalMaxSpeed: false = use artificial limit (1.6 m/s), true = use physical max
 
     // Reset the field-centric heading on Start button press
     driverController.start().onTrue(

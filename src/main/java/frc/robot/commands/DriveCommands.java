@@ -38,6 +38,10 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 public class DriveCommands {
+  // ============================================================================
+  // Constants
+  // ============================================================================
+
   // PID constants for angle control
   private static final double ANGLE_KP = 5.0;
   private static final double ANGLE_KD = 0.4;
@@ -57,6 +61,10 @@ public class DriveCommands {
   private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
 
   private DriveCommands() {}
+
+  // ============================================================================
+  // Public Getters
+  // ============================================================================
 
   /** Returns the PID proportional gain for angle control. */
   public static double getAngleKp() {
@@ -88,32 +96,65 @@ public class DriveCommands {
     return MAX_ANGULAR_RATE;
   } // End getMaxAngularRate
 
+  // ============================================================================
+  // Private Helper Methods
+  // ============================================================================
+
+  // ----------------------------------------------------------------------------
+  // Input Processing Helpers
+  // ----------------------------------------------------------------------------
+
   /**
-   * Scales a raw joystick axis to a control output, applying a deadband and a "turbo" multiplier.
+   * Applies turbo scaling to an input value. The input should already have deadband and squaring
+   * applied if needed.
    *
    * <p>Behavior:
    * <ul>
-   *   <li>Applies deadband to `inputAxis` (expected in range [-1, 1]).
    *   <li>Interpolates `turboAxis` (expected in [0, 1]) linearly between a minimum turbo value
    *       (1 / TURBO_MULTIPLE) and 1.0, then scales the result.
    * </ul>
    *
-   * @param inputAxis Raw joystick axis in [-1.0, 1.0]. Positive/negative direction is preserved.
+   * @param inputValue Input value that has already been processed (deadbanded, squared, etc.).
+   *     Positive/negative direction is preserved.
    * @param turboAxis Turbo level in [0.0, 1.0] (0 = minimum speed limiter; 1 = full speed).
    * @param maxRange Maximum magnitude of the output (units chosen by caller; e.g. meters/sec or
    *     radians/sec). Should be >= 0.
-   * @return The scaled output value
+   * @return The scaled output value with turbo applied
    */
-  private static double scaleAxisWithTurbo(double inputAxis, double turboAxis, double maxRange) {
-    inputAxis = MathUtil.applyDeadband(inputAxis, XBOX_JOYSTICK_DEADBAND);
-
+  private static double scaleAxisWithTurbo(double inputValue, double turboAxis, double maxRange) {
     // Linear interpolation from minTurbo (when turboAxis == 0) to 1.0 (when turboAxis == 1).
     double minTurbo = 1.0 / TURBO_MULTIPLE; // Minimum fraction of maxRange when turbo is not applied
     double turbo = turboAxis * (1.0 - minTurbo) + minTurbo;
 
-    // Scale the (signed) axis by the physical range and the turbo multiplier
-    return inputAxis * maxRange * turbo;
+    // Scale the (signed) value by the physical range and the turbo multiplier
+    return inputValue * maxRange * turbo;
   } // End scaleAxisWithTurbo
+
+  /**
+   * Converts joystick inputs to a linear velocity vector. (Squares input for joystick input shaping.)
+   * 
+   * @param x axis joystick input
+   * @param y axis joystick input
+   * @return linear velocity vector
+   */
+  private static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
+    // Apply deadband
+    double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), XBOX_JOYSTICK_DEADBAND);
+    Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
+
+    // Square magnitude for more precise control
+    linearMagnitude = linearMagnitude * linearMagnitude;
+
+    // Return new linear velocity
+    return new Pose2d(Translation2d.kZero, linearDirection)
+        .transformBy(new Transform2d(linearMagnitude, 0.0, Rotation2d.kZero))
+        .getTranslation();
+  } // End getLinearVelocityFromJoysticks
+
+
+  // ----------------------------------------------------------------------------
+  // Alliance/Field-Relative Helpers
+  // ----------------------------------------------------------------------------
 
   /**
    * Checks if the robot is on the red alliance.
@@ -154,6 +195,11 @@ public class DriveCommands {
     drive.runVelocity(fieldRelativeSpeeds);
   } // End driveFieldRelative
 
+
+  // ----------------------------------------------------------------------------
+  // Target Calculation Helpers
+  // ----------------------------------------------------------------------------
+
   /**
    * Calculates the target angle to face the alliance's hub center.
    *
@@ -174,26 +220,10 @@ public class DriveCommands {
     return new Rotation2d(Math.atan2(delta.getY(), delta.getX()));
   } // End calculateTargetHubAngle
 
-  /**
-   * Converts joystick inputs to a linear velocity vector. (Squares input for joystick input shaping.)
-   * 
-   * @param x axis joystick input
-   * @param y axis joystick input
-   * @return linear velocity vector
-   */
-  private static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
-    // Apply deadband
-    double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), XBOX_JOYSTICK_DEADBAND);
-    Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
-
-    // Square magnitude for more precise control
-    linearMagnitude = linearMagnitude * linearMagnitude;
-
-    // Return new linear velocity
-    return new Pose2d(Translation2d.kZero, linearDirection)
-        .transformBy(new Transform2d(linearMagnitude, 0.0, Rotation2d.kZero))
-        .getTranslation();
-  } // End getLinearVelocityFromJoysticks
+  
+  // ============================================================================
+  // Public Drive Commands
+  // ============================================================================
 
   /**
    * Field relative drive command using two joysticks (controlling linear and angular velocities).
@@ -242,6 +272,8 @@ public class DriveCommands {
    * @param turboSupplier Supplier for turbo level [0.0, 1.0] (typically right trigger)
    * @param faceTargetEnabledSupplier Supplier indicating if face-target mode is enabled
    * @param faceTargetController ProfiledPIDController for face-target rotation control
+   * @param usePhysicalMaxSpeed If true, uses the robot's physical maximum speed from the drive subsystem.
+   *     If false, uses the artificial MAX_CONTROL_SPEED limit for more controlled driving.
    * @return A command that drives the robot with turbo and optional face-target
    */
   public static Command joystickDriveWithTurboAndFaceTarget(
@@ -251,25 +283,29 @@ public class DriveCommands {
       DoubleSupplier omegaSupplier,
       DoubleSupplier turboSupplier,
       BooleanSupplier faceTargetEnabledSupplier,
-      ProfiledPIDController faceTargetController) {
+      ProfiledPIDController faceTargetController,
+      boolean usePhysicalMaxSpeed) {
     return Commands.run(
         () -> {
-          // Square all inputs (joystick and turbo) for quadratic response curve
-          double xInput = xSupplier.getAsDouble();
-          double yInput = ySupplier.getAsDouble();
-          double omegaInput = omegaSupplier.getAsDouble();
-          double turboInput = turboSupplier.getAsDouble();
+          // Get linear velocity
+          Translation2d linearVelocity =
+              getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
 
-          // Square joystick inputs (preserve sign)
-          xInput = Math.copySign(xInput * xInput, xInput);
-          yInput = Math.copySign(yInput * yInput, yInput);
-          omegaInput = Math.copySign(omegaInput * omegaInput, omegaInput);
-          // Square turbo input (always positive, so just square it)
+          // Square turbo input for quadratic response (always positive, so just square it)
+          double turboInput = turboSupplier.getAsDouble();
           turboInput = turboInput * turboInput;
 
-          // Calculate velocities with turbo and deadband
-          double velocityX = scaleAxisWithTurbo(yInput, turboInput, MAX_CONTROL_SPEED);
-          double velocityY = scaleAxisWithTurbo(xInput, turboInput, MAX_CONTROL_SPEED);
+          // Determine speed limits based on parameter
+          double maxLinearSpeed = usePhysicalMaxSpeed 
+              ? drive.getMaxLinearSpeedMetersPerSec() 
+              : MAX_CONTROL_SPEED;
+          double maxAngularRate = usePhysicalMaxSpeed 
+              ? drive.getMaxAngularSpeedRadPerSec() 
+              : MAX_ANGULAR_RATE;
+
+          // Apply turbo scaling to linear velocity components
+          double velocityX = scaleAxisWithTurbo(linearVelocity.getX(), turboInput, maxLinearSpeed);
+          double velocityY = scaleAxisWithTurbo(linearVelocity.getY(), turboInput, maxLinearSpeed);
 
           // Determine rotational rate: use face-target PID if enabled, otherwise use joystick
           double rotationalRate;
@@ -279,8 +315,15 @@ public class DriveCommands {
             rotationalRate =
                 faceTargetController.calculate(drive.getRotation().getRadians(), targetAngle.getRadians());
           } else {
-            // Use joystick input for rotation
-            rotationalRate = scaleAxisWithTurbo(omegaInput, turboInput, MAX_ANGULAR_RATE);
+            // Apply rotation deadband
+            double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), XBOX_JOYSTICK_DEADBAND);
+            
+            // Square rotation value for more precise control
+            omega = Math.copySign(omega * omega, omega);
+            
+            // Apply turbo scaling to omega
+            rotationalRate = scaleAxisWithTurbo(omega, turboInput, maxAngularRate);
+            
             // Reset PID controller when not using face-target mode
             faceTargetController.reset(drive.getRotation().getRadians());
           }
@@ -335,6 +378,11 @@ public class DriveCommands {
         // Reset PID controller when command starts
         .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
   } // End joystickDriveAtAngle
+
+
+  // ============================================================================
+  // Characterization Commands
+  // ============================================================================
 
   /**
    * Measures the velocity feedforward constants for the drive motors.
@@ -475,6 +523,10 @@ public class DriveCommands {
     double gyroDelta = 0.0;
   } // End WheelRadiusCharacterizationState
 
+
+  // ============================================================================
+  // Pathfinding Commands
+  // ============================================================================
 
   /**
    * Returns a command that pathfinds to the start of the specified path, then follows it.
