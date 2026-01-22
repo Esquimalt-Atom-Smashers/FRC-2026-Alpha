@@ -174,10 +174,23 @@ public class DriveCommands {
    * @return Speeds relative to the field, flipped if on red alliance
    */
   private static ChassisSpeeds convertToFieldRelative(ChassisSpeeds robotRelativeSpeeds, Drive drive) {
-    Rotation2d fieldOrientation =
-        isRedAlliance() ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation();
-    return ChassisSpeeds.fromFieldRelativeSpeeds(robotRelativeSpeeds, fieldOrientation);
-  } // End convertToFieldRelative
+    // For mirrored field layout with "Always blue origin" approach:
+    // - Origin is always on blue side (AprilTags use this)
+    // - When on red alliance, invert X and Y speeds (not the field orientation)
+    // - Robot orientation already accounts for which side it's on (from vision or simulation)
+    
+    if (isRedAlliance()) {
+      // Invert X and Y speeds for red alliance (mirrored field layout)
+      ChassisSpeeds invertedSpeeds = new ChassisSpeeds(
+          -robotRelativeSpeeds.vxMetersPerSecond,
+          -robotRelativeSpeeds.vyMetersPerSecond,
+          robotRelativeSpeeds.omegaRadiansPerSecond); // Don't invert rotation
+      return ChassisSpeeds.fromFieldRelativeSpeeds(invertedSpeeds, drive.getRotation());
+    } else {
+      // Blue alliance: no inversion needed
+      return ChassisSpeeds.fromFieldRelativeSpeeds(robotRelativeSpeeds, drive.getRotation());
+    }
+  }
 
   /**
    * Converts robot-relative speeds to field-relative speeds and executes the drive command.
