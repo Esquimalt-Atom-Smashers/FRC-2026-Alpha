@@ -9,7 +9,6 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.util.FieldPhysicsSim;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -26,7 +25,6 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
   private Command autonomousCommand;
   private RobotContainer robotContainer;
-  private FieldPhysicsSim fieldPhysicsSim;
 
   public Robot() {
     // Record metadata
@@ -52,8 +50,9 @@ public class Robot extends LoggedRobot {
         break;
 
       case SIM:
-        // Running a physics simulator, log to NT
+        // Running a physics simulator, log to NT, and save to /logs
         Logger.addDataReceiver(new NT4Publisher());
+        Logger.addDataReceiver(new WPILOGWriter());
         break;
 
       case REPLAY:
@@ -77,7 +76,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotPeriodic() {
     // Optionally switch the thread to high priority to improve loop
-    // timing (see the template project documentation for details)
+    // timing (see the template project documentation for details) TODO: Implement if loop is significantly less than 20ms
     // Threads.setCurrentThreadPriority(true, 99);
 
     // Runs the Scheduler. This is responsible for polling buttons, adding
@@ -87,13 +86,23 @@ public class Robot extends LoggedRobot {
     // the Command-based framework to work.
     CommandScheduler.getInstance().run();
 
-    // Return to non-RT thread priority (do not modify the first argument)
+    // Log memory usage to help identify GC-related spikes
+    Runtime runtime = Runtime.getRuntime();
+    long usedMemory = runtime.totalMemory() - runtime.freeMemory();
+    long maxMemory = runtime.maxMemory();
+    Logger.recordOutput("System/MemoryUsedMB", usedMemory / (1024 * 1024));
+    Logger.recordOutput("System/MemoryMaxMB", maxMemory / (1024 * 1024));
+    Logger.recordOutput("System/MemoryPercent", (double) usedMemory / maxMemory * 100.0);
+
+    // Return to non-RT thread priority (do not modify the first argument)  TODO: Implement if loop is significantly less than 20ms
     // Threads.setCurrentThreadPriority(false, 10);
   }
 
   /** This function is called once when the robot is disabled. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    robotContainer.resetSimulationField();
+  }
 
   /** This function is called periodically when disabled. */
   @Override
@@ -143,20 +152,13 @@ public class Robot extends LoggedRobot {
 
   /** This function is called once when the robot is first started up. */
   @Override
-  public void simulationInit() {
-    // Initialize field physics simulation for collision detection
-    // Robot radius is approximately 0.45m (half of 0.9m robot length/width from PathPlanner)
-    if (Constants.currentMode == Constants.Mode.SIM) {
-      fieldPhysicsSim = new FieldPhysicsSim(robotContainer.getDrive(), 0.45);
-    }
-  }
+  public void simulationInit() {}
 
   /** This function is called periodically whilst in simulation. */
   @Override
   public void simulationPeriodic() {
-    // Update field physics simulation (collision detection with boundaries)
-    if (fieldPhysicsSim != null) {
-      fieldPhysicsSim.update();
-    }
+    // Update the simulation world (only in SIM mode, never on real robot)
+    // This processes physics updates, collisions, and field interactions
+    robotContainer.updateSimulation();
   }
 }

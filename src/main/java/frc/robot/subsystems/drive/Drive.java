@@ -36,6 +36,7 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -43,8 +44,13 @@ import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
 import frc.robot.util.LocalADStarAK;
+import frc.robot.util.PhoenixUtil;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
+import org.ironmaple.simulation.drivesims.COTS;
+import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
+import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -78,6 +84,25 @@ public class Drive extends SubsystemBase {
               1),
           getModuleTranslations());
 
+  // Maple-sim configuration for physics simulation
+  // IMPORTANT: These values must match what regulateModuleConstantForSimulation() overrides
+  // to ensure the physics simulation matches the actual module behavior.
+  // See PhoenixUtil.SimulationConstants for documentation on why these values differ from real robot.
+  public static final DriveTrainSimulationConfig mapleSimConfig = DriveTrainSimulationConfig.Default()
+      .withRobotMass(Kilograms.of(ROBOT_MASS_KG))
+      .withCustomModuleTranslations(getModuleTranslations())
+      .withGyro(COTS.ofPigeon2())
+      .withSwerveModule(new SwerveModuleSimulationConfig(
+          DCMotor.getKrakenX60Foc(1),
+          DCMotor.getFalcon500(1),
+          TunerConstants.FrontLeft.DriveMotorGearRatio,
+          PhoenixUtil.SimulationConstants.STEER_GEAR_RATIO,
+          PhoenixUtil.SimulationConstants.DRIVE_FRICTION_VOLTAGE,
+          PhoenixUtil.SimulationConstants.STEER_FRICTION_VOLTAGE,
+          Meters.of(TunerConstants.FrontLeft.WheelRadius),
+          PhoenixUtil.SimulationConstants.STEER_INERTIA,
+          WHEEL_COF));
+
   static final Lock odometryLock = new ReentrantLock();
   private final GyroIO gyroIO;
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
@@ -98,13 +123,26 @@ public class Drive extends SubsystemBase {
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, Pose2d.kZero);
 
+  private final Consumer<Pose2d> resetSimulationPoseCallBack;
+
   public Drive(
       GyroIO gyroIO,
       ModuleIO flModuleIO,
       ModuleIO frModuleIO,
       ModuleIO blModuleIO,
       ModuleIO brModuleIO) {
+    this(gyroIO, flModuleIO, frModuleIO, blModuleIO, brModuleIO, (pose) -> {});
+  }
+
+  public Drive(
+      GyroIO gyroIO,
+      ModuleIO flModuleIO,
+      ModuleIO frModuleIO,
+      ModuleIO blModuleIO,
+      ModuleIO brModuleIO,
+      Consumer<Pose2d> resetSimulationPoseCallBack) {
     this.gyroIO = gyroIO;
+    this.resetSimulationPoseCallBack = resetSimulationPoseCallBack;
     modules[0] = new Module(flModuleIO, 0, TunerConstants.FrontLeft);
     modules[1] = new Module(frModuleIO, 1, TunerConstants.FrontRight);
     modules[2] = new Module(blModuleIO, 2, TunerConstants.BackLeft);
@@ -151,6 +189,10 @@ public class Drive extends SubsystemBase {
 
   @Override
   public void periodic() {
+    double periodicStart = Timer.getFPGATimestamp();
+
+    // Update inputs from gyro and modules
+    double updateInputsStart = Timer.getFPGATimestamp();
     odometryLock.lock(); // Prevents odometry updates while reading data
     gyroIO.updateInputs(gyroInputs);
     Logger.processInputs("Drive/Gyro", gyroInputs);
@@ -158,6 +200,8 @@ public class Drive extends SubsystemBase {
       module.periodic();
     }
     odometryLock.unlock();
+    Logger.recordOutput("Timing/Drive/UpdateInputsMs",
+        (Timer.getFPGATimestamp() - updateInputsStart) * 1000.0);
 
     // Stop moving when disabled
     if (DriverStation.isDisabled()) {
@@ -173,6 +217,7 @@ public class Drive extends SubsystemBase {
     }
 
     // Update odometry
+    double odometryStart = Timer.getFPGATimestamp();
     double[] sampleTimestamps =
         modules[0].getOdometryTimestamps(); // All signals are sampled together
     int sampleCount = sampleTimestamps.length;
@@ -203,9 +248,15 @@ public class Drive extends SubsystemBase {
       // Apply update
       poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
     }
+    Logger.recordOutput("Timing/Drive/OdometryMs",
+        (Timer.getFPGATimestamp() - odometryStart) * 1000.0);
 
     // Update gyro alert
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
+
+    // Log total periodic time
+    Logger.recordOutput("Timing/Drive/PeriodicTotalMs",
+        (Timer.getFPGATimestamp() - periodicStart) * 1000.0);
   }
 
   /**
@@ -325,6 +376,7 @@ public class Drive extends SubsystemBase {
 
   /** Resets the current odometry pose. */
   public void setPose(Pose2d pose) {
+    resetSimulationPoseCallBack.accept(pose);
     poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
   }
 
