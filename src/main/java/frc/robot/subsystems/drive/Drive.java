@@ -44,6 +44,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
 import frc.robot.util.LocalADStarAK;
+import frc.robot.util.PhoenixUtil;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -84,6 +85,9 @@ public class Drive extends SubsystemBase {
           getModuleTranslations());
 
   // Maple-sim configuration for physics simulation
+  // IMPORTANT: These values must match what regulateModuleConstantForSimulation() overrides
+  // to ensure the physics simulation matches the actual module behavior.
+  // See PhoenixUtil.SimulationConstants for documentation on why these values differ from real robot.
   public static final DriveTrainSimulationConfig mapleSimConfig = DriveTrainSimulationConfig.Default()
       .withRobotMass(Kilograms.of(ROBOT_MASS_KG))
       .withCustomModuleTranslations(getModuleTranslations())
@@ -92,11 +96,11 @@ public class Drive extends SubsystemBase {
           DCMotor.getKrakenX60Foc(1),
           DCMotor.getFalcon500(1),
           TunerConstants.FrontLeft.DriveMotorGearRatio,
-          TunerConstants.FrontLeft.SteerMotorGearRatio,
-          Volts.of(TunerConstants.FrontLeft.DriveFrictionVoltage),
-          Volts.of(TunerConstants.FrontLeft.SteerFrictionVoltage),
+          PhoenixUtil.SimulationConstants.STEER_GEAR_RATIO,
+          PhoenixUtil.SimulationConstants.DRIVE_FRICTION_VOLTAGE,
+          PhoenixUtil.SimulationConstants.STEER_FRICTION_VOLTAGE,
           Meters.of(TunerConstants.FrontLeft.WheelRadius),
-          KilogramSquareMeters.of(TunerConstants.FrontLeft.SteerInertia),
+          PhoenixUtil.SimulationConstants.STEER_INERTIA,
           WHEEL_COF));
 
   static final Lock odometryLock = new ReentrantLock();

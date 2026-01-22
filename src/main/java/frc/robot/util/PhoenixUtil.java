@@ -21,6 +21,7 @@ import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
@@ -30,6 +31,40 @@ import org.ironmaple.simulation.motorsims.SimulatedBattery;
 import org.ironmaple.simulation.motorsims.SimulatedMotorController;
 
 public final class PhoenixUtil {
+  /**
+   * Simulation-specific constants to work around known simulation bugs/limitations.
+   * 
+   * <p>These values are empirically determined from the MapleSim template to make simulation
+   * behavior match real robot behavior, despite parameter differences. The simulation engine
+   * has limitations that require different parameters to achieve realistic behavior.
+   * 
+   * <p>These constants are used in both {@link #regulateModuleConstantForSimulation} and
+   * {@link frc.robot.subsystems.drive.Drive#mapleSimConfig} to ensure consistency.
+   * 
+   * <p><strong>Note:</strong> These values differ from real robot values (as of Jan. 21):
+   * <ul>
+   *   <li>Steer gear ratio: Real robot uses 12.8, simulation uses 16.0</li>
+   *   <li>Drive friction: Real robot uses 0.2V, simulation uses 0.1V</li>
+   *   <li>Steer friction: Real robot uses 0.2V, simulation uses 0.05V</li>
+   *   <li>Steer inertia: Real robot uses 0.004 kg⋅m², simulation uses 0.05 kg⋅m²</li>
+   * </ul>
+   */
+  public static final class SimulationConstants {
+    /** Steer motor gear ratio override for simulation (real robot: 12.8) */
+    public static final double STEER_GEAR_RATIO = 16.0;
+    
+    /** Drive motor friction voltage for simulation (real robot: 0.2V) */
+    public static final Voltage DRIVE_FRICTION_VOLTAGE = Volts.of(0.1);
+    
+    /** Steer motor friction voltage for simulation (real robot: 0.2V) */
+    public static final Voltage STEER_FRICTION_VOLTAGE = Volts.of(0.05);
+    
+    /** Steer motor inertia override for simulation (real robot: 0.004 kg⋅m²) */
+    public static final MomentOfInertia STEER_INERTIA = KilogramSquareMeters.of(0.05);
+    
+    private SimulationConstants() {} // Prevent instantiation
+  }
+
   /** Attempts to run the command until no error is produced. */
   public static void tryUntilOk(int maxAttempts, Supplier<StatusCode> command) {
     for (int i = 0; i < maxAttempts; i++) {
@@ -138,11 +173,11 @@ public final class PhoenixUtil {
             .withKV(1.91)
             .withKA(0)
             .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign))
-        .withSteerMotorGearRatio(16.0)
-        // Adjust friction voltages
-        .withDriveFrictionVoltage(Volts.of(0.1))
-        .withSteerFrictionVoltage(Volts.of(0.05))
-        // Adjust steer inertia
-        .withSteerInertia(KilogramSquareMeters.of(0.05));
+        .withSteerMotorGearRatio(SimulationConstants.STEER_GEAR_RATIO)
+        // Adjust friction voltages (reduced for smoother simulation)
+        .withDriveFrictionVoltage(SimulationConstants.DRIVE_FRICTION_VOLTAGE)
+        .withSteerFrictionVoltage(SimulationConstants.STEER_FRICTION_VOLTAGE)
+        // Adjust steer inertia (increased to prevent oscillation/jitter)
+        .withSteerInertia(SimulationConstants.STEER_INERTIA);
   }
 }
