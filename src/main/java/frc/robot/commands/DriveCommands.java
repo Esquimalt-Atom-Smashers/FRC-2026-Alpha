@@ -179,8 +179,8 @@ public class DriveCommands {
     // - When on red alliance, invert X and Y speeds (not the field orientation)
     // - Robot orientation already accounts for which side it's on (from vision or simulation)
     
-    if (isRedAlliance()) {
-      // Invert X and Y speeds for red alliance (mirrored field layout)
+    if (!isRedAlliance()) {
+      // Invert X and Y speeds for blue alliance (mirrored field layout)
       ChassisSpeeds invertedSpeeds = new ChassisSpeeds(
           -robotRelativeSpeeds.vxMetersPerSecond,
           -robotRelativeSpeeds.vyMetersPerSecond,
