@@ -1,192 +1,173 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+// Copyright (c) 2021-2026 Littleton Robotics
+// http://github.com/Mechanical-Advantage
+//
+// Use of this source code is governed by a BSD
+// license that can be found in the LICENSE file
+// at the root directory of this project.
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.*;
-
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-
-import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
-
-import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
-
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.commands.DriveCommands;
+import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.GyroIO;
+import frc.robot.subsystems.drive.GyroIOPigeon2;
+import frc.robot.subsystems.drive.ModuleIO;
+import frc.robot.subsystems.drive.ModuleIOSim;
+import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
-
+/**
+ * This class is where the bulk of the robot should be declared. Since Command-based is a
+ * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
+ * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
+ * subsystems, commands, and button mappings) should be declared here.
+ */
 public class RobotContainer {
-  // Swerve Drive constants
-	private final double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts top speed possible at 12 volts
-	private final double MAX_ANGULAR_RATE = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second, max angular velocity
-	private final double MAX_CONTROL_SPEED = 1.6; // Max speed the driver can go in x or y in m/s
-	private final double TURBO_MULTIPLE = 2; // Technically a divider for how slow it is pre-turbo since it is limited to the max control speed
+  // Subsystems
+  private final Drive drive;
 
-  // Setting up bindings for necessary control of the swerve drive platform
-	private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-			.withDeadband(0).withRotationalDeadband(0) // don't apply deadband here, it ends up being jerky apply it in the request supplier
-			.withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-	private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
+  // Controller
+  private final CommandXboxController controller = new CommandXboxController(0);
 
-	// Controllers
-	private final CommandXboxController driverController = new CommandXboxController(0);
-  private static final double XBOX_DEADBAND = 0.09;
+  // Dashboard inputs
+  private final LoggedDashboardChooser<Command> autoChooser;
 
-  // Subsystems Intialization
-	public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain(); // Creates Drivetrain and configures Autobuilder settings
-
-
-  // Path follower
-	private final SendableChooser<Command> autoChooser;
-
-
-  // Manual Override and Encoder Reset
-  public static boolean manualOverride = false;
-  private boolean encoderReset = false;
-
-  // Telemetry
-	private final Telemetry logger = new Telemetry(MaxSpeed);
-
-
-	/**
-	 * RobotContainer constructor initializes the robot.
-	 */
+  /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    // Register the named commands for Auto
-    registerCommands();
+    switch (Constants.currentMode) {
+      case REAL:
+        // Real robot, instantiate hardware IO implementations
+        // ModuleIOTalonFX is intended for modules with TalonFX drive, TalonFX turn, and
+        // a CANcoder
+        drive =
+            new Drive(
+                new GyroIOPigeon2(),
+                new ModuleIOTalonFX(TunerConstants.FrontLeft),
+                new ModuleIOTalonFX(TunerConstants.FrontRight),
+                new ModuleIOTalonFX(TunerConstants.BackLeft),
+                new ModuleIOTalonFX(TunerConstants.BackRight));
 
-    // Configure the trigger bindings
-		configureDriveBindings(true); // False to disable driving
-    configureOperatorBindings(false); // False to disable operator controls
+        // The ModuleIOTalonFXS implementation provides an example implementation for
+        // TalonFXS controller connected to a CANdi with a PWM encoder. The
+        // implementations
+        // of ModuleIOTalonFX, ModuleIOTalonFXS, and ModuleIOSpark (from the Spark
+        // swerve
+        // template) can be freely intermixed to support alternative hardware
+        // arrangements.
+        // Please see the AdvantageKit template documentation for more information:
+        // https://docs.advantagekit.org/getting-started/template-projects/talonfx-swerve-template#custom-module-implementations
+        //
+        // drive =
+        // new Drive(
+        // new GyroIOPigeon2(),
+        // new ModuleIOTalonFXS(TunerConstants.FrontLeft),
+        // new ModuleIOTalonFXS(TunerConstants.FrontRight),
+        // new ModuleIOTalonFXS(TunerConstants.BackLeft),
+        // new ModuleIOTalonFXS(TunerConstants.BackRight));
+        break;
 
-    // Setup the auto chooser
-    autoChooser = AutoBuilder.buildAutoChooser("Drive Straight"); // Default auto program to run
-		SmartDashboard.putData("Auto Mode", autoChooser);
-  } // End RobotContainer
+      case SIM:
+        // Sim robot, instantiate physics sim IO implementations
+        drive =
+            new Drive(
+                new GyroIO() {},
+                new ModuleIOSim(TunerConstants.FrontLeft),
+                new ModuleIOSim(TunerConstants.FrontRight),
+                new ModuleIOSim(TunerConstants.BackLeft),
+                new ModuleIOSim(TunerConstants.BackRight));
+        break;
 
-
-	/** 
-   * Deadband function to eliminate small joystick inputs.
-   * @param value to apply deadband to.
-   * */
-	private static double applyDeadband(double value){
-		return applyDeadband(value, XBOX_DEADBAND);
-	} // End applyDeadband
-
-  /** 
-   * Deadband function to eliminate small joystick inputs.
-   * @param value to apply deadband to.
-   * @param deadband threshold.
-   * */
-  private static double applyDeadband(double value, double deadband) {
-      if (Math.abs(value) < deadband) {
-          return 0.0;
-      }
-      // Rescale so the output goes from 0 to 1 outside the deadband
-      double sign = Math.signum(value);
-      double adjusted = (Math.abs(value) - deadband) / (1.0 - deadband);
-      return sign * adjusted;
-  } // End applyDeadband
-
-  /**
-   * Scale a raw joystick axis to a control output, applying a deadband and a "turbo" multiplier.
-   *
-   * Behavior:
-   * - Applies the existing deadband to `inputAxis` (expected in range [-1, 1]).
-   * - Interpolates `turboAxis` (expected in [0, 1]) linearly between a minimum turbo
-   *   value (1 / TURBO_MULTIPLE) and 1.0, then scales the result.
-   *
-   * @param inputAxis  Raw joystick axis in [-1.0, 1.0]. Positive/negative direction is preserved.
-   * @param turboAxis  Turbo level in [0.0, 1.0] (0 = minimum speed limiter; 1 = full speed). Values outside that range will be clamped.
-   * @param maxRange   Maximum magnitude of the output (units chosen by caller; e.g. meters/sec or radians/sec). Should be >= 0.
-   */
-  private double scaleAxisWithTurbo(double inputAxis, double turboAxis, double maxRange) {
-      inputAxis = applyDeadband(inputAxis); // Apply the joystick deadband
-
-      // Linear interpolation from minTurbo (when turboAxis == 0) to 1.0 (when turboAxis == 1).
-      double minTurbo = 1.0 / TURBO_MULTIPLE; // Minimum fraction of maxRange when turbo is not applied
-      double turbo = turboAxis * (1.0 - minTurbo) + minTurbo;
-
-      // Scale the (signed) axis by the physical range and the turbo multiplier
-      return inputAxis * maxRange * turbo;
-  } // End scaleAxisWithTurbo
-
-
-  /**
-   * Prints the current pose of the robot to the console.
-   */
-  public void printPose(){
-    Pose2d robotPose = drivetrain.getState().Pose;
-    System.out.println("x " + robotPose.getX());
-    System.out.println("y " + robotPose.getY());
-    System.out.println("rot " + robotPose.getRotation());
-  } // End printPose
-
-
-  /**
-   * Configure only the drive to enable or disable
-   * @param enableDriving true to enable driving, false to disable
-   */
-  private void configureDriveBindings(boolean enableDriving){
-    // Drive Enabled
-    if (enableDriving){
-      // Drivetrain will execute this command periodically
-      drivetrain.setDefaultCommand(
-        drivetrain.applyRequest(() ->
-          drive.withVelocityX(scaleAxisWithTurbo(-driverController.getLeftY(), driverController.getRightTriggerAxis() , MAX_CONTROL_SPEED)) // Drive forward with negative Y (forward)
-            .withVelocityY(scaleAxisWithTurbo(-driverController.getLeftX(), driverController.getRightTriggerAxis() , MAX_CONTROL_SPEED)) // Drive left with negative X (left)
-            .withRotationalRate(scaleAxisWithTurbo(-driverController.getRightX(), driverController.getRightTriggerAxis() , MAX_ANGULAR_RATE)) // Drive counterclockwise with negative X (left)
-        )
-      );
-      // Brake Mode - Stop robot from being moved
-      //driverController.x().whileTrue(drivetrain.applyRequest(() -> new SwerveRequest.SwerveDriveBrake()));
-
-      // Reset the field-centric heading on Start button press
-      //driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
-
-    // Drive Disabled
-    } else {
-      drivetrain.setDefaultCommand(
-        // Drivetrain will execute this command periodically
-        drivetrain.applyRequest(() ->
-          drive.withVelocityX(0.0)
-            .withVelocityY(0.0)
-            .withRotationalRate(0.0)
-        )
-      );
+      default:
+        // Replayed robot, disable IO implementations
+        drive =
+            new Drive(
+                new GyroIO() {},
+                new ModuleIO() {},
+                new ModuleIO() {},
+                new ModuleIO() {},
+                new ModuleIO() {});
+        break;
     }
-  } // End configureDriveBindings
 
+    // Set up auto routines
+    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
-  /** Created only to reduce Merge Conflicts while both working on this file */
-  private void configureOperatorBindings(boolean enableOperatorControls){
-    // Operator Controls Enabled
-    if (enableOperatorControls){
-      // Add operator controls here
-    }
-  } // End configureOperatorBindings
+    // Set up SysId routines
+    autoChooser.addOption(
+        "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
+    autoChooser.addOption(
+        "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
+    autoChooser.addOption(
+        "Drive SysId (Quasistatic Forward)",
+        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Drive SysId (Quasistatic Reverse)",
+        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
+    // Configure the button bindings
+    configureButtonBindings();
+  }
 
   /**
-   * Run the path selected from the auto chooser
+   * Use this method to define your button->command mappings. Buttons can be created by
+   * instantiating a {@link GenericHID} or one of its subclasses ({@link
+   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
+   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
+   */
+  private void configureButtonBindings() {
+    // Default command, normal field-relative drive
+    drive.setDefaultCommand(
+        DriveCommands.joystickDrive(
+            drive,
+            () -> -controller.getLeftY(),
+            () -> -controller.getLeftX(),
+            () -> -controller.getRightX()));
+
+    // Lock to 0° when A button is held
+    controller
+        .a()
+        .whileTrue(
+            DriveCommands.joystickDriveAtAngle(
+                drive,
+                () -> -controller.getLeftY(),
+                () -> -controller.getLeftX(),
+                () -> Rotation2d.kZero));
+
+    // Switch to X pattern when X button is pressed
+    controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+
+    // Reset gyro to 0° when B button is pressed
+    controller
+        .b()
+        .onTrue(
+            Commands.runOnce(
+                    () ->
+                        drive.setPose(
+                            new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
+                    drive)
+                .ignoringDisable(true));
+  }
+
+  /**
+   * Use this to pass the autonomous command to the main {@link Robot} class.
    *
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return autoChooser.getSelected();
-  } // End getAutonomousCommand
-
-  /**
-   * Register commands for use in the dashboard.
-   */
-	private void registerCommands() {
-		// Register the commands here
-  } // End registerCommands
-  
-} // End RobotContainer.java
+    return autoChooser.get();
+  }
+}
