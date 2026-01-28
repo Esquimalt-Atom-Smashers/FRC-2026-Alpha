@@ -82,8 +82,7 @@ public class ModuleIOSim implements ModuleIO {
   private final StatusSignal<Voltage> turnAppliedVolts;
   private final StatusSignal<Current> turnCurrent;
 
-  @SuppressWarnings("unchecked")
-  public ModuleIOSim(SwerveModuleConstants constants, SwerveModuleSimulation simulation) {
+  public ModuleIOSim(SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants, SwerveModuleSimulation simulation) {
     this.constants = PhoenixUtil.regulateModuleConstantForSimulation(constants);
     this.simulation = simulation;
 
