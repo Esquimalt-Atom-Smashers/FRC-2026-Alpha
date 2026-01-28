@@ -14,12 +14,10 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
 import java.util.LinkedList;
@@ -62,19 +60,10 @@ public class Vision extends SubsystemBase {
 
   @Override
   public void periodic() {
-    double periodicStart = Timer.getFPGATimestamp();
-
-    // Update inputs from cameras
-    double updateInputsStart = Timer.getFPGATimestamp();
     for (int i = 0; i < io.length; i++) {
-      double cameraStart = Timer.getFPGATimestamp();
       io[i].updateInputs(inputs[i]);
-      Logger.recordOutput("Timing/Vision/Camera" + i + "/UpdateInputsMs",
-          (Timer.getFPGATimestamp() - cameraStart) * 1000.0);
       Logger.processInputs("Vision/Camera" + Integer.toString(i), inputs[i]);
     }
-    Logger.recordOutput("Timing/Vision/UpdateInputsTotalMs",
-        (Timer.getFPGATimestamp() - updateInputsStart) * 1000.0);
 
     // Initialize logging values
     List<Pose3d> allTagPoses = new LinkedList<>();
@@ -83,7 +72,6 @@ public class Vision extends SubsystemBase {
     List<Pose3d> allRobotPosesRejected = new LinkedList<>();
 
     // Loop over cameras
-    double filterAndFuseStart = Timer.getFPGATimestamp();
     for (int cameraIndex = 0; cameraIndex < io.length; cameraIndex++) {
       // Update disconnected alert
       disconnectedAlerts[cameraIndex].set(!inputs[cameraIndex].connected);
@@ -93,7 +81,6 @@ public class Vision extends SubsystemBase {
       List<Pose3d> robotPoses = new LinkedList<>();
       List<Pose3d> robotPosesAccepted = new LinkedList<>();
       List<Pose3d> robotPosesRejected = new LinkedList<>();
-      List<Pose3d> cameraPoses = new LinkedList<>();
 
       // Add tag poses
       for (int tagId : inputs[cameraIndex].tagIds) {
@@ -125,10 +112,6 @@ public class Vision extends SubsystemBase {
           robotPosesRejected.add(observation.pose());
         } else {
           robotPosesAccepted.add(observation.pose());
-          // Calculate camera pose from robot pose for visualization (lines to tags)
-          Transform3d robotToCamera = (cameraIndex == 0) ? robotToCamera0 : robotToCamera1;
-          Pose3d cameraPose = observation.pose().plus(robotToCamera);
-          cameraPoses.add(cameraPose);
         }
 
         // Skip if rejected
@@ -159,9 +142,6 @@ public class Vision extends SubsystemBase {
 
       // Log camera metadata
       Logger.recordOutput(
-          "Vision/Camera" + Integer.toString(cameraIndex) + "/CameraPose",
-          cameraPoses.toArray(new Pose3d[0]));
-      Logger.recordOutput(
           "Vision/Camera" + Integer.toString(cameraIndex) + "/TagPoses",
           tagPoses.toArray(new Pose3d[0]));
       Logger.recordOutput(
@@ -179,9 +159,6 @@ public class Vision extends SubsystemBase {
       allRobotPosesRejected.addAll(robotPosesRejected);
     }
 
-    Logger.recordOutput("Timing/Vision/FilterAndFuseMs",
-        (Timer.getFPGATimestamp() - filterAndFuseStart) * 1000.0);
-
     // Log summary data
     Logger.recordOutput("Vision/Summary/TagPoses", allTagPoses.toArray(new Pose3d[0]));
     Logger.recordOutput("Vision/Summary/RobotPoses", allRobotPoses.toArray(new Pose3d[0]));
@@ -189,15 +166,6 @@ public class Vision extends SubsystemBase {
         "Vision/Summary/RobotPosesAccepted", allRobotPosesAccepted.toArray(new Pose3d[0]));
     Logger.recordOutput(
         "Vision/Summary/RobotPosesRejected", allRobotPosesRejected.toArray(new Pose3d[0]));
-
-    // Log logging time
-    double loggingStart = Timer.getFPGATimestamp();
-    Logger.recordOutput("Timing/Vision/LoggingMs",
-        (Timer.getFPGATimestamp() - loggingStart) * 1000.0);
-
-    // Log total periodic time
-    Logger.recordOutput("Timing/Vision/PeriodicTotalMs",
-        (Timer.getFPGATimestamp() - periodicStart) * 1000.0);
   }
 
   @FunctionalInterface

@@ -11,7 +11,6 @@ import static edu.wpi.first.units.Units.*;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.ctre.phoenix6.StatusCode;
-import com.ctre.phoenix6.configs.ParentConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -21,7 +20,6 @@ import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
@@ -31,40 +29,6 @@ import org.ironmaple.simulation.motorsims.SimulatedBattery;
 import org.ironmaple.simulation.motorsims.SimulatedMotorController;
 
 public final class PhoenixUtil {
-  /**
-   * Simulation-specific constants to work around known simulation bugs/limitations.
-   * 
-   * <p>These values are empirically determined from the MapleSim template to make simulation
-   * behavior match real robot behavior, despite parameter differences. The simulation engine
-   * has limitations that require different parameters to achieve realistic behavior.
-   * 
-   * <p>These constants are used in both {@link #regulateModuleConstantForSimulation} and
-   * {@link frc.robot.subsystems.drive.Drive#mapleSimConfig} to ensure consistency.
-   * 
-   * <p><strong>Note:</strong> These values differ from real robot values (as of Jan. 21):
-   * <ul>
-   *   <li>Steer gear ratio: Real robot uses 12.8, simulation uses 16.0</li>
-   *   <li>Drive friction: Real robot uses 0.2V, simulation uses 0.1V</li>
-   *   <li>Steer friction: Real robot uses 0.2V, simulation uses 0.05V</li>
-   *   <li>Steer inertia: Real robot uses 0.004 kg⋅m², simulation uses 0.05 kg⋅m²</li>
-   * </ul>
-   */
-  public static final class SimulationConstants {
-    /** Steer motor gear ratio override for simulation (real robot: 12.8) */
-    public static final double STEER_GEAR_RATIO = 16.0;
-    
-    /** Drive motor friction voltage for simulation (real robot: 0.2V) */
-    public static final Voltage DRIVE_FRICTION_VOLTAGE = Volts.of(0.1);
-    
-    /** Steer motor friction voltage for simulation (real robot: 0.2V) */
-    public static final Voltage STEER_FRICTION_VOLTAGE = Volts.of(0.05);
-    
-    /** Steer motor inertia override for simulation (real robot: 0.004 kg⋅m²) */
-    public static final MomentOfInertia STEER_INERTIA = KilogramSquareMeters.of(0.05);
-    
-    private SimulationConstants() {} // Prevent instantiation
-  }
-
   /** Attempts to run the command until no error is produced. */
   public static void tryUntilOk(int maxAttempts, Supplier<StatusCode> command) {
     for (int i = 0; i < maxAttempts; i++) {
@@ -73,111 +37,107 @@ public final class PhoenixUtil {
     }
   }
 
-  public static class TalonFXMotorControllerSim implements SimulatedMotorController {
-    private static int instances = 0;
-    public final int id;
+	public static class TalonFXMotorControllerSim implements SimulatedMotorController {
+		private static int instances = 0;
+		public final int id;
 
-    private final TalonFXSimState talonFXSimState;
+		private final TalonFXSimState talonFXSimState;
 
-    public TalonFXMotorControllerSim(TalonFX talonFX) {
-      this.id = instances++;
+		public TalonFXMotorControllerSim(TalonFX talonFX) {
+			this.id = instances++;
 
-      this.talonFXSimState = talonFX.getSimState();
-    }
+			this.talonFXSimState = talonFX.getSimState();
+		}
 
-    @Override
-    public Voltage updateControlSignal(
-        Angle mechanismAngle,
-        AngularVelocity mechanismVelocity,
-        Angle encoderAngle,
-        AngularVelocity encoderVelocity) {
-      talonFXSimState.setRawRotorPosition(encoderAngle);
-      talonFXSimState.setRotorVelocity(encoderVelocity);
-      talonFXSimState.setSupplyVoltage(SimulatedBattery.getBatteryVoltage());
-      return talonFXSimState.getMotorVoltageMeasure();
-    }
-  }
+		@Override
+		public Voltage updateControlSignal(
+				Angle mechanismAngle,
+				AngularVelocity mechanismVelocity,
+				Angle encoderAngle,
+				AngularVelocity encoderVelocity) {
+			talonFXSimState.setRawRotorPosition(encoderAngle);
+			talonFXSimState.setRotorVelocity(encoderVelocity);
+			talonFXSimState.setSupplyVoltage(SimulatedBattery.getBatteryVoltage());
+			return talonFXSimState.getMotorVoltageMeasure();
+		}
+	}
 
-  public static class TalonFXMotorControllerWithRemoteCancoderSim extends TalonFXMotorControllerSim {
-    private final CANcoderSimState remoteCancoderSimState;
+	public static class TalonFXMotorControllerWithRemoteCancoderSim extends TalonFXMotorControllerSim {
+		private final CANcoderSimState remoteCancoderSimState;
 
-    public TalonFXMotorControllerWithRemoteCancoderSim(TalonFX talonFX, CANcoder cancoder) {
-      super(talonFX);
-      this.remoteCancoderSimState = cancoder.getSimState();
-    }
+		public TalonFXMotorControllerWithRemoteCancoderSim(TalonFX talonFX, CANcoder cancoder) {
+			super(talonFX);
+			this.remoteCancoderSimState = cancoder.getSimState();
+		}
 
-    @Override
-    public Voltage updateControlSignal(
-        Angle mechanismAngle,
-        AngularVelocity mechanismVelocity,
-        Angle encoderAngle,
-        AngularVelocity encoderVelocity) {
-      remoteCancoderSimState.setRawPosition(mechanismAngle);
-      remoteCancoderSimState.setVelocity(mechanismVelocity);
+		@Override
+		public Voltage updateControlSignal(
+				Angle mechanismAngle,
+				AngularVelocity mechanismVelocity,
+				Angle encoderAngle,
+				AngularVelocity encoderVelocity) {
+			remoteCancoderSimState.setRawPosition(mechanismAngle);
+			remoteCancoderSimState.setVelocity(mechanismVelocity);
 
-      return super.updateControlSignal(mechanismAngle, mechanismVelocity, encoderAngle, encoderVelocity);
-    }
-  }
+			return super.updateControlSignal(mechanismAngle, mechanismVelocity, encoderAngle, encoderVelocity);
+		}
+	}
 
-  public static double[] getSimulationOdometryTimeStamps() {
-    final double[] odometryTimeStamps = new double[SimulatedArena.getSimulationSubTicksIn1Period()];
-    for (int i = 0; i < odometryTimeStamps.length; i++) {
-      odometryTimeStamps[i] = Timer.getFPGATimestamp() - 0.02 + i * SimulatedArena.getSimulationDt().in(Seconds);
-    }
+	public static double[] getSimulationOdometryTimeStamps() {
+		final double[] odometryTimeStamps = new double[SimulatedArena.getSimulationSubTicksIn1Period()];
+		for (int i = 0; i < odometryTimeStamps.length; i++) {
+			odometryTimeStamps[i] = Timer.getFPGATimestamp() - 0.02 + i * SimulatedArena.getSimulationDt().in(Seconds);
+		}
 
-    return odometryTimeStamps;
-  }
+		return odometryTimeStamps;
+	}
 
-  /**
-   *
-   *
-   * <h2>Regulates the {@link SwerveModuleConstants} for a single module.</h2>
-   *
-   * <p>This method applies specific adjustments to the {@link SwerveModuleConstants} for simulation purposes. These
-   * changes have no effect on real robot operations and address known simulation bugs:
-   *
-   * <ul>
-   *   <li><strong>Inverted Drive Motors:</strong> Prevents drive PID issues caused by inverted configurations.
-   *   <li><strong>Non-zero CanCoder Offsets:</strong> Fixes potential module state optimization issues.
-   *   <li><strong>Steer Motor PID:</strong> Adjusts PID values tuned for real robots to improve simulation
-   *       performance.
-   * </ul>
-   *
-   * <h4>Note:This function is skipped when running on a real robot, ensuring no impact on constants used on real
-   * robot hardware.</h4>
-   */
-  public static <
-          DriveConfigT extends ParentConfiguration,
-          SteerConfigT extends ParentConfiguration,
-          EncoderConfigT extends ParentConfiguration>
-      SwerveModuleConstants<DriveConfigT, SteerConfigT, EncoderConfigT> regulateModuleConstantForSimulation(
-          SwerveModuleConstants<DriveConfigT, SteerConfigT, EncoderConfigT> moduleConstants) {
-    // Skip regulation if running on a real robot
-    if (RobotBase.isReal()) return moduleConstants;
+	/**
+	 *
+	 *
+	 * <h2>Regulates the {@link SwerveModuleConstants} for a single module.</h2>
+	 *
+	 * <p>This method applies specific adjustments to the {@link SwerveModuleConstants} for simulation purposes. These
+	 * changes have no effect on real robot operations and address known simulation bugs:
+	 *
+	 * <ul>
+	 *   <li><strong>Inverted Drive Motors:</strong> Prevents drive PID issues caused by inverted configurations.
+	 *   <li><strong>Non-zero CanCoder Offsets:</strong> Fixes potential module state optimization issues.
+	 *   <li><strong>Steer Motor PID:</strong> Adjusts PID values tuned for real robots to improve simulation
+	 *       performance.
+	 * </ul>
+	 *
+	 * <h4>Note:This function is skipped when running on a real robot, ensuring no impact on constants used on real
+	 * robot hardware.</h4>
+	 */
+	public static SwerveModuleConstants regulateModuleConstantForSimulation(
+			SwerveModuleConstants<?, ?, ?> moduleConstants) {
+		// Skip regulation if running on a real robot
+		if (RobotBase.isReal()) return moduleConstants;
 
-    // Apply simulation-specific adjustments to module constants
-    return moduleConstants
-        // Disable encoder offsets
-        .withEncoderOffset(0)
-        // Disable motor inversions for drive and steer motors
-        .withDriveMotorInverted(false)
-        .withSteerMotorInverted(false)
-        // Disable CanCoder inversion
-        .withEncoderInverted(false)
-        // Adjust steer motor PID gains for simulation
-        .withSteerMotorGains(new Slot0Configs()
-            .withKP(70)
-            .withKI(0)
-            .withKD(4.5)
-            .withKS(0)
-            .withKV(1.91)
-            .withKA(0)
-            .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign))
-        .withSteerMotorGearRatio(SimulationConstants.STEER_GEAR_RATIO)
-        // Adjust friction voltages (reduced for smoother simulation)
-        .withDriveFrictionVoltage(SimulationConstants.DRIVE_FRICTION_VOLTAGE)
-        .withSteerFrictionVoltage(SimulationConstants.STEER_FRICTION_VOLTAGE)
-        // Adjust steer inertia (increased to prevent oscillation/jitter)
-        .withSteerInertia(SimulationConstants.STEER_INERTIA);
-  }
+		// Apply simulation-specific adjustments to module constants
+		return moduleConstants
+				// Disable encoder offsets
+				.withEncoderOffset(0)
+				// Disable motor inversions for drive and steer motors
+				.withDriveMotorInverted(false)
+				.withSteerMotorInverted(false)
+				// Disable CanCoder inversion
+				.withEncoderInverted(false)
+				// Adjust steer motor PID gains for simulation
+				.withSteerMotorGains(new Slot0Configs()
+						.withKP(70)
+						.withKI(0)
+						.withKD(4.5)
+						.withKS(0)
+						.withKV(1.91)
+						.withKA(0)
+						.withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign))
+				.withSteerMotorGearRatio(16.0)
+				// Adjust friction voltages
+				.withDriveFrictionVoltage(Volts.of(0.1))
+				.withSteerFrictionVoltage(Volts.of(0.05))
+				// Adjust steer inertia
+				.withSteerInertia(KilogramSquareMeters.of(0.05));
+	}
 }

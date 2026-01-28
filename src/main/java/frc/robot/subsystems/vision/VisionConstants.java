@@ -13,12 +13,13 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 
 public class VisionConstants {
-  // AprilTag layout (Welded field - Correct for Canada Competitions, and United States Regionals)
-  public static AprilTagFieldLayout aprilTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
+  // AprilTag layout
+  public static AprilTagFieldLayout aprilTagLayout =
+      AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
   // Camera names, must match names configured on coprocessor
-  public static String camera0Name = "Arducam_OV9821";
-  public static String camera1Name = "webcam_0";
+  public static String camera0Name = "camera_0";
+  public static String camera1Name = "camera_1";
 
   // Robot to camera transforms
   public static Transform3d robotToCamera0 =

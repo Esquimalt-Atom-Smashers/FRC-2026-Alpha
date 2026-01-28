@@ -9,6 +9,7 @@ package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.CANBus;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
@@ -36,15 +37,14 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.vision.Vision;
 import frc.robot.util.LocalADStarAK;
-import frc.robot.util.PhoenixUtil;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -54,7 +54,7 @@ import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class Drive extends SubsystemBase {
+public class Drive extends SubsystemBase implements Vision.VisionConsumer {
   // TunerConstants doesn't include these constants, so they are declared locally
   static final double ODOMETRY_FREQUENCY = TunerConstants.kCANBus.isNetworkFD() ? 250.0 : 100.0;
   public static final double DRIVE_BASE_RADIUS =
@@ -67,8 +67,8 @@ public class Drive extends SubsystemBase {
               Math.hypot(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)));
 
   // PathPlanner config constants
-  private static final double ROBOT_MASS_KG = 20.088;
-  private static final double ROBOT_MOI = 3.883;
+  private static final double ROBOT_MASS_KG = 74.088;
+  private static final double ROBOT_MOI = 6.883;
   private static final double WHEEL_COF = 1.2;
   private static final RobotConfig PP_CONFIG =
       new RobotConfig(
@@ -84,11 +84,7 @@ public class Drive extends SubsystemBase {
               1),
           getModuleTranslations());
 
-  // Maple-sim configuration for physics simulation
-  // IMPORTANT: These values must match what regulateModuleConstantForSimulation() overrides
-  // to ensure the physics simulation matches the actual module behavior.
-  // See PhoenixUtil.SimulationConstants for documentation on why these values differ from real robot.
-  public static final DriveTrainSimulationConfig mapleSimConfig = DriveTrainSimulationConfig.Default()
+	public static final DriveTrainSimulationConfig mapleSimConfig = DriveTrainSimulationConfig.Default()
       .withRobotMass(Kilograms.of(ROBOT_MASS_KG))
       .withCustomModuleTranslations(getModuleTranslations())
       .withGyro(COTS.ofPigeon2())
@@ -96,11 +92,11 @@ public class Drive extends SubsystemBase {
           DCMotor.getKrakenX60(1),
           DCMotor.getFalcon500(1),
           TunerConstants.FrontLeft.DriveMotorGearRatio,
-          PhoenixUtil.SimulationConstants.STEER_GEAR_RATIO,
-          PhoenixUtil.SimulationConstants.DRIVE_FRICTION_VOLTAGE,
-          PhoenixUtil.SimulationConstants.STEER_FRICTION_VOLTAGE,
+          TunerConstants.FrontLeft.SteerMotorGearRatio,
+          Volts.of(TunerConstants.FrontLeft.DriveFrictionVoltage),
+          Volts.of(TunerConstants.FrontLeft.SteerFrictionVoltage),
           Meters.of(TunerConstants.FrontLeft.WheelRadius),
-          PhoenixUtil.SimulationConstants.STEER_INERTIA,
+          KilogramSquareMeters.of(TunerConstants.FrontLeft.SteerInertia),
           WHEEL_COF));
 
   static final Lock odometryLock = new ReentrantLock();
@@ -111,28 +107,19 @@ public class Drive extends SubsystemBase {
   private final Alert gyroDisconnectedAlert =
       new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
 
-  private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
+  private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
   private Rotation2d rawGyroRotation = Rotation2d.kZero;
-  private SwerveModulePosition[] lastModulePositions = // For delta tracking
+  private final SwerveModulePosition[] lastModulePositions = // For delta tracking
       new SwerveModulePosition[] {
         new SwerveModulePosition(),
         new SwerveModulePosition(),
         new SwerveModulePosition(),
         new SwerveModulePosition()
       };
-  private SwerveDrivePoseEstimator poseEstimator =
+  private final SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, Pose2d.kZero);
 
-  private final Consumer<Pose2d> resetSimulationPoseCallBack;
-
-  public Drive(
-      GyroIO gyroIO,
-      ModuleIO flModuleIO,
-      ModuleIO frModuleIO,
-      ModuleIO blModuleIO,
-      ModuleIO brModuleIO) {
-    this(gyroIO, flModuleIO, frModuleIO, blModuleIO, brModuleIO, (pose) -> {});
-  }
+	private final Consumer<Pose2d> resetSimulationPoseCallBack;
 
   public Drive(
       GyroIO gyroIO,
@@ -189,10 +176,6 @@ public class Drive extends SubsystemBase {
 
   @Override
   public void periodic() {
-    double periodicStart = Timer.getFPGATimestamp();
-
-    // Update inputs from gyro and modules
-    double updateInputsStart = Timer.getFPGATimestamp();
     odometryLock.lock(); // Prevents odometry updates while reading data
     gyroIO.updateInputs(gyroInputs);
     Logger.processInputs("Drive/Gyro", gyroInputs);
@@ -200,8 +183,6 @@ public class Drive extends SubsystemBase {
       module.periodic();
     }
     odometryLock.unlock();
-    Logger.recordOutput("Timing/Drive/UpdateInputsMs",
-        (Timer.getFPGATimestamp() - updateInputsStart) * 1000.0);
 
     // Stop moving when disabled
     if (DriverStation.isDisabled()) {
@@ -217,7 +198,6 @@ public class Drive extends SubsystemBase {
     }
 
     // Update odometry
-    double odometryStart = Timer.getFPGATimestamp();
     double[] sampleTimestamps =
         modules[0].getOdometryTimestamps(); // All signals are sampled together
     int sampleCount = sampleTimestamps.length;
@@ -248,15 +228,9 @@ public class Drive extends SubsystemBase {
       // Apply update
       poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
     }
-    Logger.recordOutput("Timing/Drive/OdometryMs",
-        (Timer.getFPGATimestamp() - odometryStart) * 1000.0);
 
     // Update gyro alert
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
-
-    // Log total periodic time
-    Logger.recordOutput("Timing/Drive/PeriodicTotalMs",
-        (Timer.getFPGATimestamp() - periodicStart) * 1000.0);
   }
 
   /**
@@ -266,13 +240,13 @@ public class Drive extends SubsystemBase {
    */
   public void runVelocity(ChassisSpeeds speeds) {
     // Calculate module setpoints
-    ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
-    SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
+    speeds = ChassisSpeeds.discretize(speeds, 0.02);
+    SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(speeds);
     SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, TunerConstants.kSpeedAt12Volts);
 
     // Log unoptimized setpoints and setpoint speeds
     Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
-    Logger.recordOutput("SwerveChassisSpeeds/Setpoints", discreteSpeeds);
+    Logger.recordOutput("SwerveChassisSpeeds/Setpoints", speeds);
 
     // Send setpoints to modules
     for (int i = 0; i < 4; i++) {
@@ -379,9 +353,9 @@ public class Drive extends SubsystemBase {
     resetSimulationPoseCallBack.accept(pose);
     poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
   }
-
   /** Adds a new timestamped vision measurement. */
-  public void addVisionMeasurement(
+  @Override
+  public void accept(
       Pose2d visionRobotPoseMeters,
       double timestampSeconds,
       Matrix<N3, N1> visionMeasurementStdDevs) {

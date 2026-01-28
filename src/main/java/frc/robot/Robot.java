@@ -7,6 +7,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import org.littletonrobotics.junction.LogFileUtil;
@@ -50,9 +51,8 @@ public class Robot extends LoggedRobot {
         break;
 
       case SIM:
-        // Running a physics simulator, log to NT, and save to /logs
+        // Running a physics simulator, log to NT
         Logger.addDataReceiver(new NT4Publisher());
-        Logger.addDataReceiver(new WPILOGWriter());
         break;
 
       case REPLAY:
@@ -76,7 +76,8 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotPeriodic() {
     // Optionally switch the thread to high priority to improve loop
-    // timing (see the template project documentation for details) TODO: Implement if loop is significantly less than 20ms
+    // timing - only impacts real robot, not little to no effect on simulation
+		// (see the template project documentation for details) // TODO: Could enable if Loop Time is under 1 ms
     // Threads.setCurrentThreadPriority(true, 99);
 
     // Runs the Scheduler. This is responsible for polling buttons, adding
@@ -86,23 +87,15 @@ public class Robot extends LoggedRobot {
     // the Command-based framework to work.
     CommandScheduler.getInstance().run();
 
-    // Log memory usage to help identify GC-related spikes
-    Runtime runtime = Runtime.getRuntime();
-    long usedMemory = runtime.totalMemory() - runtime.freeMemory();
-    long maxMemory = runtime.maxMemory();
-    Logger.recordOutput("System/MemoryUsedMB", usedMemory / (1024 * 1024));
-    Logger.recordOutput("System/MemoryMaxMB", maxMemory / (1024 * 1024));
-    Logger.recordOutput("System/MemoryPercent", (double) usedMemory / maxMemory * 100.0);
-
-    // Return to non-RT thread priority (do not modify the first argument)  TODO: Implement if loop is significantly less than 20ms
+    // Return to non-RT thread priority (do not modify the first argument)  // TODO: Could enable if Loop Time is under 1 ms
     // Threads.setCurrentThreadPriority(false, 10);
   }
 
   /** This function is called once when the robot is disabled. */
   @Override
   public void disabledInit() {
-    robotContainer.resetSimulationField();
-  }
+		robotContainer.resetSimulationField();
+	}
 
   /** This function is called periodically when disabled. */
   @Override
@@ -157,8 +150,6 @@ public class Robot extends LoggedRobot {
   /** This function is called periodically whilst in simulation. */
   @Override
   public void simulationPeriodic() {
-    // Update the simulation world (only in SIM mode, never on real robot)
-    // This processes physics updates, collisions, and field interactions
     robotContainer.updateSimulation();
-  }
+	}
 }

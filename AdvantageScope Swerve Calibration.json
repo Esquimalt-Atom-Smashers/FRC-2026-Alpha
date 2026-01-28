@@ -24,7 +24,7 @@
               "title": "",
               "controller": null,
               "controllerUUID": "grimvlgu9aluj8btvwotco2wpj0pto2h",
-              "renderer": "",
+              "renderer": "#/",
               "controlsHeight": 0
             },
             {
@@ -192,12 +192,12 @@
                 "leftLockedRange": null,
                 "rightLockedRange": null,
                 "leftUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
+                  "type": null,
+                  "factor": 1
                 },
                 "rightUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
+                  "type": null,
+                  "factor": 1
                 },
                 "leftFilter": 0,
                 "rightFilter": 0
@@ -257,12 +257,12 @@
                 "leftLockedRange": null,
                 "rightLockedRange": null,
                 "leftUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
+                  "type": null,
+                  "factor": 1
                 },
                 "rightUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
+                  "type": null,
+                  "factor": 1
                 },
                 "leftFilter": 0,
                 "rightFilter": 0
@@ -302,12 +302,12 @@
                 "leftLockedRange": null,
                 "rightLockedRange": null,
                 "leftUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
+                  "type": null,
+                  "factor": 1
                 },
                 "rightUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
+                  "type": null,
+                  "factor": 1
                 },
                 "leftFilter": 0,
                 "rightFilter": 0
@@ -347,12 +347,12 @@
                 "leftLockedRange": null,
                 "rightLockedRange": null,
                 "leftUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
+                  "type": null,
+                  "factor": 1
                 },
                 "rightUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
+                  "type": null,
+                  "factor": 1
                 },
                 "leftFilter": 0,
                 "rightFilter": 0
@@ -392,12 +392,12 @@
                 "leftLockedRange": null,
                 "rightLockedRange": null,
                 "leftUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
+                  "type": null,
+                  "factor": 1
                 },
                 "rightUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
+                  "type": null,
+                  "factor": 1
                 },
                 "leftFilter": 0,
                 "rightFilter": 0
@@ -438,12 +438,12 @@
                 "leftLockedRange": null,
                 "rightLockedRange": null,
                 "leftUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
+                  "type": null,
+                  "factor": 1
                 },
                 "rightUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
+                  "type": null,
+                  "factor": 1
                 },
                 "leftFilter": 0,
                 "rightFilter": 0
@@ -458,5 +458,5 @@
     }
   ],
   "satellites": [],
-  "version": "26.0.0"
+  "version": "4.0.0-beta-3"
 }

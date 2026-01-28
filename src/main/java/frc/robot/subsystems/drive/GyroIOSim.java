@@ -1,10 +1,3 @@
-// Copyright (c) 2021-2026 Littleton Robotics
-// http://github.com/Mechanical-Advantage
-//
-// Use of this source code is governed by a BSD
-// license that can be found in the LICENSE file
-// at the root directory of this project.
-
 package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.RadiansPerSecond;
@@ -24,8 +17,7 @@ public class GyroIOSim implements GyroIO {
   public void updateInputs(GyroIOInputs inputs) {
     inputs.connected = true;
     inputs.yawPosition = gyroSimulation.getGyroReading();
-    inputs.yawVelocityRadPerSec = Units.degreesToRadians(
-        gyroSimulation.getMeasuredAngularVelocity().in(RadiansPerSecond));
+    inputs.yawVelocityRadPerSec = gyroSimulation.getMeasuredAngularVelocity().in(RadiansPerSecond);
 
     inputs.odometryYawTimestamps = PhoenixUtil.getSimulationOdometryTimeStamps();
     inputs.odometryYawPositions = gyroSimulation.getCachedGyroReadings();
