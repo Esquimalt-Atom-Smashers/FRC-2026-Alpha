@@ -12,9 +12,14 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -28,6 +33,11 @@ import frc.robot.subsystems.drive.GyroIOSim;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.shooter.ShooterConstants;
+import frc.robot.subsystems.shooter.turrent.Turret;
+import frc.robot.subsystems.shooter.turrent.TurretIO;
+import frc.robot.subsystems.shooter.turrent.TurretIOTalonFX;
+import frc.robot.subsystems.shooter.turrent.TurretIOSim;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
@@ -51,10 +61,15 @@ public class RobotContainer {
 	// Subsystems
 	private final Drive drive;
 	@SuppressWarnings("unused")
-	private final Vision vision; 
+	private final Vision vision;
+	private final Turret turret; 
 
 	// Drive Simulation
 	private SwerveDriveSimulation driveSimulation = null;
+
+	// Field view (robot + turret pose) – visible in SmartDashboard/Glass when running sim
+	private final Field2d field = new Field2d();
+	private final FieldObject2d turretObject = field.getObject("Turret");
 
 	// Dashboard inputs
 	private final LoggedDashboardChooser<Command> autoChooser;
@@ -89,6 +104,7 @@ public class RobotContainer {
                 drive,
                 new VisionIOPhotonVision(camera0Name, robotToCamera0),
                 new VisionIOPhotonVision(camera1Name, robotToCamera1));
+        this.turret = new Turret(new TurretIOTalonFX());
         break;
 
 			// Sim robot, instantiate physics sim IO implementations
@@ -120,6 +136,7 @@ public class RobotContainer {
 											camera0Name, robotToCamera0, driveSimulation::getSimulatedDriveTrainPose),
 									new VisionIOPhotonVisionSim(
 											camera1Name, robotToCamera1, driveSimulation::getSimulatedDriveTrainPose));
+					this.turret = new Turret(new TurretIOSim());
 					break;
 
 			default:
@@ -132,9 +149,19 @@ public class RobotContainer {
 						new ModuleIO() {},
 						(pose) -> {});
 				vision = new Vision(drive, new VisionIO() {}, new VisionIO() {});
+				turret = new Turret(new TurretIO() {});
 
 				break;
 		}
+
+		// Turret aims at hub using robot pose (odometry); replace with hold-position command to disable
+		turret.setDefaultCommand(
+				Commands.run(
+						() -> turret.setGoalAngle(DriveCommands.getTurretAngleToHub(drive)),
+						turret));
+
+		// Field view: robot + turret so you can see turret direction in sim
+		SmartDashboard.putData("Field", field);
 
 		// Set up auto routines
 		autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -272,6 +299,29 @@ public class RobotContainer {
 		if (Constants.currentMode != Constants.Mode.SIM) return;
 
 		SimulatedArena.getInstance().simulationPeriodic();
-		Logger.recordOutput("FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
+		Pose2d robotPose = driveSimulation.getSimulatedDriveTrainPose();
+		Logger.recordOutput("FieldSimulation/RobotPosition", robotPose);
+
+		// Turret pose in field frame
+		double robotX = robotPose.getX();
+		double robotY = robotPose.getY();
+		double robotTheta = robotPose.getRotation().getRadians();
+		double dx = ShooterConstants.robotToTurret.getX();
+		double dy = ShooterConstants.robotToTurret.getY();
+		double turretX = robotX + dx * Math.cos(robotTheta) - dy * Math.sin(robotTheta);
+		double turretY = robotY + dx * Math.sin(robotTheta) + dy * Math.cos(robotTheta);
+		Rotation2d turretAngle = robotPose.getRotation().plus(turret.getPosition());
+		Pose2d turretPose = new Pose2d(turretX, turretY, turretAngle);
+		Logger.recordOutput("FieldSimulation/TurretPose", turretPose);
+
+		// 3D turret pose (Z from robotToTurret) so it shows in the air in 3D view like camera poses
+		double turretZ = ShooterConstants.robotToTurret.getZ();
+		Pose3d turretPose3d =
+				new Pose3d(turretX, turretY, turretZ, new Rotation3d(0, 0, turretAngle.getRadians()));
+		Logger.recordOutput("FieldSimulation/TurretPose3d", turretPose3d);
+
+		// Update field view so you can see robot and turret direction in the dashboard
+		field.setRobotPose(robotPose);
+		turretObject.setPose(turretPose);
 	}
 }
