@@ -16,10 +16,7 @@ public interface FlywheelIO {
   /** Update inputs from the hardware. */
   default void updateInputs(FlywheelIOInputs inputs) {}
 
-  /**
-   * Set the target velocity (rad/s, flywheel output).
-   * Controller runs velocity PID on-device at higher rate than robot loop.
-   */
+  /** Set the target velocity (rad/s, flywheel output). */
   default void setTargetVelocity(double targetVelocityRadsPerSec) {}
 
   /** Stop the flywheel (no power). */

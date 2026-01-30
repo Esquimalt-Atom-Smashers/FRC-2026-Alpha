@@ -8,12 +8,13 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.StatusCode;
 import edu.wpi.first.math.util.Units;
 import frc.robot.generated.TunerConstants;
 
-/** Flywheel IO using a single Talon FX with onboard velocity control. */
+/** Flywheel IO using a Talon FX with onboard velocity control. */
 public class FlywheelIOTalonFX implements FlywheelIO {
 
   private final TalonFX motor;
@@ -24,9 +25,19 @@ public class FlywheelIOTalonFX implements FlywheelIO {
 
     var talonFxConfig = new TalonFXConfiguration();
     talonFxConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    talonFxConfig.MotorOutput.Inverted =
+        kMotorInverted
+            ? InvertedValue.Clockwise_Positive
+            : InvertedValue.CounterClockwise_Positive;
+    talonFxConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+    talonFxConfig.CurrentLimits.StatorCurrentLimit = kStatorCurrentLimitAmps;
+
     talonFxConfig.Slot0.kP = kP;
     talonFxConfig.Slot0.kI = kI;
     talonFxConfig.Slot0.kD = kD;
+    talonFxConfig.Slot0.kV = kV;
+    talonFxConfig.Slot0.kS = kS;
+
     tryUntilOk(5, () -> motor.getConfigurator().apply(talonFxConfig, 0.25));
   } // End FlywheelIOTalonFX Constructor
 
@@ -46,8 +57,8 @@ public class FlywheelIOTalonFX implements FlywheelIO {
 
   @Override
   public void setTargetVelocity(double targetVelocityRadsPerSec) {
-    double flywheelRps = targetVelocityRadsPerSec / (2.0 * Math.PI);
-    double motorRps = flywheelRps * kGearRatio;
+    double targetRps = targetVelocityRadsPerSec / (2.0 * Math.PI);
+    double motorRps = targetRps * kGearRatio;
     motor.setControl(velocityVoltageRequest.withVelocity(motorRps));
   } // End setTargetVelocity
 

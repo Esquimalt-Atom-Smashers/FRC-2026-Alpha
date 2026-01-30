@@ -35,7 +35,7 @@ import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
-import frc.robot.subsystems.shooter.flywheel.FlywheelConstants;
+import frc.robot.subsystems.shooter.flywheel.Flywheel.FlywheelState;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIO;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOSim;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOTalonFX;
@@ -202,12 +202,6 @@ public class RobotContainer {
 		/// ---------------------------------------------------------------------------------------------------------------
 		/// ------------------------------------------ Shooter Subsystem Commands -----------------------------------------
 		/// ---------------------------------------------------------------------------------------------------------------
-		// Flywheel holds default target velocity whenever enabled
-		flywheel.setDefaultCommand(
-			Commands.run(
-					() -> flywheel.setTargetVelocity(FlywheelConstants.kDefaultTargetVelocityRadsPerSec),
-					flywheel));
-		
 		// Turret aims at hub using robot pose (odometry); replace with hold-position command to disable
 		turret.setDefaultCommand(
 				Commands.run(
@@ -305,6 +299,20 @@ public class RobotContainer {
     }, drive));
 
     driverController.a().onTrue(Commands.runOnce(() -> printPose()));
+
+    // Flywheel: RB toggles Idle ↔ Charging/AtSpeed (Charging auto-transitions to AtSpeed when at target)
+    if (flywheel != null) {
+      driverController.rightBumper().onTrue(
+          Commands.runOnce(
+              () -> {
+                if (flywheel.getState() == FlywheelState.IDLE) {
+                  flywheel.setState(FlywheelState.CHARGING);
+                } else {
+                  flywheel.setState(FlywheelState.IDLE);
+                }
+              },
+              flywheel));
+    }
 
     // Pathfind then follow path to outpost when D-pad up is held
     driverController.povUp().whileTrue(DriveCommands.pathfindThenFollowPath(drive, "DriveToOutpost"));
