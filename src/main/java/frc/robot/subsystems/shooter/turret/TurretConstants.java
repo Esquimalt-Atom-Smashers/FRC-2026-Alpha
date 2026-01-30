@@ -9,7 +9,7 @@ public final class TurretConstants {
   private TurretConstants() {}
 
   /** CAN ID of the turret motor. */
-  public static final int kMotorId = 5; // TODO: Add correct ID
+  public static final int kMotorId = 5;
 
   /** Turret radians per motor rotation (output / input). 1.0 = 1:1. */
   public static final double kGearRatio = 20.0;

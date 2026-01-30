@@ -13,41 +13,41 @@ import org.littletonrobotics.junction.Logger;
 /** Turret subsystem: one motor with PID position control, aimed at a goal angle. */
 public class Turret extends SubsystemBase {
 
-  private final TurretIO io;
-  private final TurretIO.TurretIOInputs ioInputs = new TurretIO.TurretIOInputs();
+  private final TurretIO turretIO; // Hardware Abstraction IO Interface for the turret motors
+  private final TurretIO.TurretIOInputs turretInputs = new TurretIO.TurretIOInputs(); // Data Container for the turret values
   private final PIDController pid = new PIDController(kP, kI, kD);
 
   private Rotation2d goalAngle = Rotation2d.kZero;
 
   public Turret(TurretIO io) {
-    this.io = io;
+    this.turretIO = io;
     pid.setTolerance(Units.degreesToRadians(2.0));
   }
 
   @Override
   public void periodic() {
-    io.updateInputs(ioInputs);
+    turretIO.updateInputs(turretInputs);
 
-    Logger.recordOutput("Turret/Inputs/MotorConnected", ioInputs.motorConnected);
-    Logger.recordOutput("Turret/Inputs/PositionRads", ioInputs.positionRads);
-    Logger.recordOutput("Turret/Inputs/VelocityRadsPerSec", ioInputs.velocityRadsPerSec);
-    Logger.recordOutput("Turret/Inputs/AppliedVolts", ioInputs.appliedVolts);
-    Logger.recordOutput("Turret/Inputs/SupplyCurrentAmps", ioInputs.supplyCurrentAmps);
+    Logger.recordOutput("Turret/Inputs/MotorConnected", turretInputs.motorConnected);
+    Logger.recordOutput("Turret/Inputs/PositionRads", turretInputs.positionRads);
+    Logger.recordOutput("Turret/Inputs/VelocityRadsPerSec", turretInputs.velocityRadsPerSec);
+    Logger.recordOutput("Turret/Inputs/AppliedVolts", turretInputs.appliedVolts);
+    Logger.recordOutput("Turret/Inputs/SupplyCurrentAmps", turretInputs.supplyCurrentAmps);
     Logger.recordOutput("Turret/PositionDegrees", getPosition().getDegrees());
     Logger.recordOutput("Turret/GoalDegrees", getGoalAngle().getDegrees());
 
     if (DriverStation.isDisabled()) {
-      io.setVoltage(0.0);
+      turretIO.setVoltage(0.0);
       return;
     }
 
     double goalRad = MathUtil.clamp(goalAngle.getRadians(), kMinAngleRad, kMaxAngleRad);
-    double positionRad = ioInputs.positionRads + kEncoderZeroOffsetRad;
+    double positionRad = turretInputs.positionRads + kEncoderZeroOffsetRad;
 
     double output = pid.calculate(positionRad, goalRad);
     output = MathUtil.clamp(output, -kMaxVoltage, kMaxVoltage);
 
-    io.setVoltage(output);
+    turretIO.setVoltage(output);
 
     // TODO: Better to use kPosition control in the motor controllers, so that the PID control is done on the devices instead of the code
   }
@@ -64,7 +64,7 @@ public class Turret extends SubsystemBase {
 
   /** Get the current turret position (robot frame: 0 = forward). */
   public Rotation2d getPosition() {
-    return Rotation2d.fromRadians(ioInputs.positionRads + kEncoderZeroOffsetRad);
+    return Rotation2d.fromRadians(turretInputs.positionRads + kEncoderZeroOffsetRad);
   }
 
   /** Whether the turret is at the goal within tolerance. */
