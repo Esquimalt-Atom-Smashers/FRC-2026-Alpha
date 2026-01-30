@@ -1,6 +1,6 @@
-package frc.robot.subsystems.shooter.turrent;
+package frc.robot.subsystems.shooter.turret;
 
-import static frc.robot.subsystems.shooter.turrent.TurretConstants.*;
+import static frc.robot.subsystems.shooter.turret.TurretConstants.*;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;

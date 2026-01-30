@@ -1,6 +1,6 @@
-package frc.robot.subsystems.shooter.turrent;
+package frc.robot.subsystems.shooter.turret;
 
-import static frc.robot.subsystems.shooter.turrent.TurretConstants.kGearRatio;
+import static frc.robot.subsystems.shooter.turret.TurretConstants.kGearRatio;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
