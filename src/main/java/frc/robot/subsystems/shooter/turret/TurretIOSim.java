@@ -25,8 +25,8 @@ public class TurretIOSim implements TurretIO {
     sim.update(kLoopPeriodSecs);
 
     inputs.motorConnected = true;
-    inputs.positionRads = sim.getAngularPositionRad() * kGearRatio;
-    inputs.velocityRadsPerSec = sim.getAngularVelocityRadPerSec() * kGearRatio;
+    inputs.positionRads = sim.getAngularPositionRad() / kGearRatio;
+    inputs.velocityRadsPerSec = sim.getAngularVelocityRadPerSec() / kGearRatio;
     inputs.appliedVolts = appliedVolts;
     inputs.supplyCurrentAmps = sim.getCurrentDrawAmps();
   }
