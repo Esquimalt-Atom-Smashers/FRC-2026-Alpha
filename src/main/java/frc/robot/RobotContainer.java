@@ -156,6 +156,9 @@ public class RobotContainer {
             edu.wpi.first.units.Units.Seconds.of(0.02), // 20ms robot period
             5); // 5 simulation ticks per period
 
+        // Use local arena with to drive through ramps
+        SimulatedArena.overrideInstance(new frc.robot.simulation.Arena2026Rebuilt(true));
+
 				driveSimulation = new SwerveDriveSimulation(Drive.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
 				SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
 				drive = new Drive(
