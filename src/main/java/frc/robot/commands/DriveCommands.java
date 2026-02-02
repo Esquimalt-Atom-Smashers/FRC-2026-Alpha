@@ -22,13 +22,12 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.FieldConstants;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.util.AllianceUtil;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
@@ -157,16 +156,6 @@ public class DriveCommands {
   // ----------------------------------------------------------------------------
 
   /**
-   * Checks if the robot is on the red alliance.
-   *
-   * @return true if on red alliance, false otherwise
-   */
-  private static boolean isRedAlliance() {
-    return DriverStation.getAlliance().isPresent()
-        && DriverStation.getAlliance().get() == Alliance.Red;
-  } // End isRedAlliance
-
-  /**
    * Converts robot-relative speeds to field-relative speeds, accounting for alliance color.
    *
    * @param robotRelativeSpeeds Speeds relative to the robot's current orientation
@@ -179,7 +168,7 @@ public class DriveCommands {
     // - When on red alliance, rotate the reference frame by 180° instead of inverting speeds
     // - Robot orientation already accounts for which side it's on (from vision or simulation)
     
-    boolean isFlipped = isRedAlliance();
+    boolean isFlipped = AllianceUtil.isRedAlliance();
     return ChassisSpeeds.fromFieldRelativeSpeeds(
         robotRelativeSpeeds,
         isFlipped
@@ -221,7 +210,7 @@ public class DriveCommands {
 
     // Determine target based on alliance
     Translation2d targetPosition =
-        isRedAlliance() ? FieldConstants.RED_HUB_CENTER : FieldConstants.BLUE_HUB_CENTER;
+        AllianceUtil.isRedAlliance() ? FieldConstants.RED_HUB_CENTER : FieldConstants.BLUE_HUB_CENTER;
 
     // Calculate angle from robot to target
     Translation2d delta = targetPosition.minus(robotPosition);
