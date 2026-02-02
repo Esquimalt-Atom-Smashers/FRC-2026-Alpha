@@ -21,6 +21,7 @@ public class Flywheel extends SubsystemBase {
   private final FlywheelIO.FlywheelIOInputs flywheelInputs = new FlywheelIO.FlywheelIOInputs();
 
   private FlywheelState state = FlywheelState.IDLE;
+  private double targetVelocityRadsPerSec = kDefaultTargetVelocityRadsPerSec;
 
   public Flywheel(FlywheelIO io) {
     flywheelIO = io;
@@ -53,15 +54,19 @@ public class Flywheel extends SubsystemBase {
       state = FlywheelState.CHARGING;
     }
 
-    double targetVelocityRadsPerSec =
-        state == FlywheelState.IDLE ? kIdleVelocityRadsPerSec : kDefaultTargetVelocityRadsPerSec;
-    flywheelIO.setTargetVelocity(targetVelocityRadsPerSec);
+    double velocityToUse = state == FlywheelState.IDLE ? kIdleVelocityRadsPerSec : targetVelocityRadsPerSec;
+    flywheelIO.setTargetVelocity(velocityToUse);
   } // End periodic
 
   /** Set the flywheel state. */
   public void setState(FlywheelState newState) {
     state = newState;
   } // End setState
+
+  /** Set the target velocity (rad/s) used when state is Charging or AtSpeed. */
+  public void setTargetVelocityRadsPerSec(double radsPerSec) {
+    targetVelocityRadsPerSec = radsPerSec;
+  } // End setTargetVelocityRadsPerSec
 
   /** Get the current flywheel state. */
   public FlywheelState getState() {
@@ -70,7 +75,7 @@ public class Flywheel extends SubsystemBase {
 
   /** Get the current target velocity (rad/s) for the current state. */
   public double getTargetVelocityRadsPerSec() {
-    return state == FlywheelState.IDLE ? kIdleVelocityRadsPerSec : kDefaultTargetVelocityRadsPerSec;
+    return state == FlywheelState.IDLE ? kIdleVelocityRadsPerSec : targetVelocityRadsPerSec;
   } // End getTargetVelocityRadsPerSec
 
   /** Get the current target velocity (RPM). */
