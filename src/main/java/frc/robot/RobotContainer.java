@@ -51,6 +51,7 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
+import frc.robot.simulation.FuelSim;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -186,6 +187,8 @@ public class RobotContainer {
 				flywheel = new Flywheel(new FlywheelIOSim());
 				hood = new Hood(new HoodIOSim());
 				turret = new Turret(new TurretIOSim());
+
+				configureFuelSim();
 				break;
 
 			// Replayed robot, disable IO implementations
@@ -263,6 +266,40 @@ public class RobotContainer {
     configureOperatorBindings(false); // False to disable operator controls
   }
 
+
+  /**
+   * Configures FuelSim for robot-ball collision in simulation. Robot dimensions are derived from
+   * TunerConstants front-left and front-right module positions (width) and front/back positions
+   * (length).
+   */
+  private void configureFuelSim() {
+    FuelSim instance = FuelSim.getInstance();
+    instance.spawnStartingFuel();
+
+    // Width (left to right): distance between front-left and front-right modules
+    double robotWidthMeters =
+        TunerConstants.FrontLeft.LocationY - TunerConstants.FrontRight.LocationY;
+    // Length (front to back): distance between front and back modules
+    double robotLengthMeters =
+        TunerConstants.FrontLeft.LocationX - TunerConstants.BackLeft.LocationX;
+    double bumperHeightMeters = 0.35;
+
+    instance.registerRobot(
+        robotWidthMeters,
+        robotLengthMeters,
+        bumperHeightMeters,
+        drive::getPose,
+        drive::getFieldRelativeChassisSpeeds);
+
+    instance.start();
+
+		SmartDashboard.putData(Commands.runOnce(() -> {
+						FuelSim.getInstance().clearFuel();
+						FuelSim.getInstance().spawnStartingFuel();
+				})
+				.withName("Reset Fuel")
+				.ignoringDisable(true));
+  }
 
   /** Prints the current odometry pose of the robot to the console. */
   public void printPose() {

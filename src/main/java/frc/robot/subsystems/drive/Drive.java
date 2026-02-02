@@ -312,10 +312,17 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
     return states;
   }
 
-  /** Returns the measured chassis speeds of the robot. */
+  /** Returns the measured chassis speeds of the robot (robot-relative). */
   @AutoLogOutput(key = "SwerveChassisSpeeds/Measured")
   private ChassisSpeeds getChassisSpeeds() {
     return kinematics.toChassisSpeeds(getModuleStates());
+  }
+
+  /**
+   * Returns field-relative chassis speeds. Used by FuelSim for robot-ball collision.
+   */
+  public ChassisSpeeds getFieldRelativeChassisSpeeds() {
+    return ChassisSpeeds.fromRobotRelativeSpeeds(getChassisSpeeds(), getRotation());
   }
 
   /** Returns the position of each module in radians. */
