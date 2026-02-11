@@ -42,6 +42,10 @@ import frc.robot.subsystems.agitator.AgitatorIO;
 import frc.robot.subsystems.agitator.AgitatorIOSim;
 import frc.robot.subsystems.agitator.AgitatorIOSparkMax;
 import frc.robot.subsystems.shooter.ShooterConstants;
+import frc.robot.subsystems.shooter.transfer.Transfer;
+import frc.robot.subsystems.shooter.transfer.TransferIO;
+import frc.robot.subsystems.shooter.transfer.TransferIOSim;
+import frc.robot.subsystems.shooter.transfer.TransferIOSparkMax;
 import frc.robot.subsystems.shooter.turret.Turret;
 import frc.robot.subsystems.shooter.turret.TurretIO;
 import frc.robot.subsystems.shooter.turret.TurretIOSim;
@@ -81,6 +85,7 @@ public class RobotContainer {
 	private boolean isVisionEnabled = true;
 	private boolean isIntakeEnabled = true;
 	private boolean isAgitatorEnabled = true;
+	private boolean isTransferEnabled = true;
 	private boolean isTurretEnabled = true;
 	private boolean isHoodEnabled = true;
 	private boolean isFlywheelEnabled = true;
@@ -91,6 +96,7 @@ public class RobotContainer {
 	private final Vision vision;
 	private final Intake intake;
 	private final Agitator agitator;
+	private final Transfer transfer;
 	private final Turret turret;
 	@SuppressWarnings("unused")
 	private final Hood hood;
@@ -158,6 +164,7 @@ public class RobotContainer {
 				// Subsystems
 				intake = isIntakeEnabled ? new Intake(new IntakeIOSparkMax()) : new Intake(new IntakeIO() {});
 				agitator = isAgitatorEnabled ? new Agitator(new AgitatorIOSparkMax()) : new Agitator(new AgitatorIO() {});
+				transfer = isTransferEnabled ? new Transfer(new TransferIOSparkMax()) : new Transfer(new TransferIO() {});
 				turret = isTurretEnabled ? new Turret(new TurretIOSparkMax()) : new Turret(new TurretIO() {});
 				hood = isHoodEnabled ? new Hood(new HoodIOSparkMax()) : new Hood(new HoodIO() {});
 				flywheel = isFlywheelEnabled ? new Flywheel(new FlywheelIOTalonFX()) : new Flywheel(new FlywheelIO() {});
@@ -200,6 +207,7 @@ public class RobotContainer {
 				// Subsystems
 				intake = new Intake(new IntakeIOSim());
 				agitator = new Agitator(new AgitatorIOSim());
+				transfer = new Transfer(new TransferIOSim());
 				turret = new Turret(new TurretIOSim());
 				hood = new Hood(new HoodIOSim());
 				flywheel = new Flywheel(new FlywheelIOSim());
@@ -222,6 +230,7 @@ public class RobotContainer {
 				// Subsystems
 				intake = new Intake(new IntakeIO() {});
 				agitator = new Agitator(new AgitatorIO() {});
+				transfer = new Transfer(new TransferIO() {});
 				turret = new Turret(new TurretIO() {});
 				hood = new Hood(new HoodIO() {});
 				flywheel = new Flywheel(new FlywheelIO() {});
