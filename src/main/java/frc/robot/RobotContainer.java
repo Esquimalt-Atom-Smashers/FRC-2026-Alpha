@@ -37,20 +37,24 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
+import frc.robot.subsystems.agitator.Agitator;
+import frc.robot.subsystems.agitator.AgitatorIO;
+import frc.robot.subsystems.agitator.AgitatorIOSim;
+import frc.robot.subsystems.agitator.AgitatorIOSparkMax;
 import frc.robot.subsystems.shooter.ShooterConstants;
+import frc.robot.subsystems.shooter.turret.Turret;
+import frc.robot.subsystems.shooter.turret.TurretIO;
+import frc.robot.subsystems.shooter.turret.TurretIOSim;
+import frc.robot.subsystems.shooter.turret.TurretIOSparkMax;
+import frc.robot.subsystems.shooter.hood.Hood;
+import frc.robot.subsystems.shooter.hood.HoodIO;
+import frc.robot.subsystems.shooter.hood.HoodIOSim;
+import frc.robot.subsystems.shooter.hood.HoodIOSparkMax;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
 import frc.robot.subsystems.shooter.flywheel.Flywheel.FlywheelState;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIO;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOSim;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOTalonFX;
-import frc.robot.subsystems.shooter.hood.Hood;
-import frc.robot.subsystems.shooter.hood.HoodIO;
-import frc.robot.subsystems.shooter.hood.HoodIOSim;
-import frc.robot.subsystems.shooter.hood.HoodIOSparkMax;
-import frc.robot.subsystems.shooter.turret.Turret;
-import frc.robot.subsystems.shooter.turret.TurretIO;
-import frc.robot.subsystems.shooter.turret.TurretIOSim;
-import frc.robot.subsystems.shooter.turret.TurretIOSparkMax;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
@@ -76,19 +80,21 @@ public class RobotContainer {
 	private boolean isDriveEnabled = true;
 	private boolean isVisionEnabled = true;
 	private boolean isIntakeEnabled = true;
-	private boolean isFlywheelEnabled = true;
-	private boolean isHoodEnabled = true;
+	private boolean isAgitatorEnabled = true;
 	private boolean isTurretEnabled = true;
+	private boolean isHoodEnabled = true;
+	private boolean isFlywheelEnabled = true;
 
 	// Subsystems
 	private final Drive drive;
 	@SuppressWarnings("unused")
 	private final Vision vision;
 	private final Intake intake;
-	private final Flywheel flywheel;
+	private final Agitator agitator;
+	private final Turret turret;
 	@SuppressWarnings("unused")
 	private final Hood hood;
-	private final Turret turret;
+	private final Flywheel flywheel;
 
 	// Drive Simulation
 	private SwerveDriveSimulation driveSimulation = null;
@@ -151,9 +157,10 @@ public class RobotContainer {
 
 				// Subsystems
 				intake = isIntakeEnabled ? new Intake(new IntakeIOSparkMax()) : new Intake(new IntakeIO() {});
-				flywheel = isFlywheelEnabled ? new Flywheel(new FlywheelIOTalonFX()) : new Flywheel(new FlywheelIO() {});
-				hood = isHoodEnabled ? new Hood(new HoodIOSparkMax()) : new Hood(new HoodIO() {});
+				agitator = isAgitatorEnabled ? new Agitator(new AgitatorIOSparkMax()) : new Agitator(new AgitatorIO() {});
 				turret = isTurretEnabled ? new Turret(new TurretIOSparkMax()) : new Turret(new TurretIO() {});
+				hood = isHoodEnabled ? new Hood(new HoodIOSparkMax()) : new Hood(new HoodIO() {});
+				flywheel = isFlywheelEnabled ? new Flywheel(new FlywheelIOTalonFX()) : new Flywheel(new FlywheelIO() {});
 				break;
 
 			// Sim robot, instantiate physics sim IO implementations
@@ -192,9 +199,10 @@ public class RobotContainer {
 
 				// Subsystems
 				intake = new Intake(new IntakeIOSim());
-				flywheel = new Flywheel(new FlywheelIOSim());
-				hood = new Hood(new HoodIOSim());
+				agitator = new Agitator(new AgitatorIOSim());
 				turret = new Turret(new TurretIOSim());
+				hood = new Hood(new HoodIOSim());
+				flywheel = new Flywheel(new FlywheelIOSim());
 
 				configureFuelSim();
 				break;
@@ -213,9 +221,10 @@ public class RobotContainer {
 
 				// Subsystems
 				intake = new Intake(new IntakeIO() {});
-				flywheel = new Flywheel(new FlywheelIO() {});
-				hood = new Hood(new HoodIO() {});
+				agitator = new Agitator(new AgitatorIO() {});
 				turret = new Turret(new TurretIO() {});
+				hood = new Hood(new HoodIO() {});
+				flywheel = new Flywheel(new FlywheelIO() {});
 				break;
 		}
 
