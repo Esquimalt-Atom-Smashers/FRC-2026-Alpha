@@ -256,8 +256,8 @@ public class RobotContainer {
 		Logger.recordOutput("ZeroedRobotComponents", new Pose3d[] {new Pose3d(), new Pose3d()});
 		Logger.recordOutput("FinalComponentPoses",
 				new Pose3d[] {
-					new Pose3d(0.03, 0.2, 0.35, new Rotation3d(0, 0, 0)), // model_0 shooter
-					new Pose3d(0.03, 0.2, 0.35, new Rotation3d(0, 0, 0))  // model_1 extender
+					new Pose3d(-0.17, 0.05, 0.35, new Rotation3d(0, 0, 0)), // model_0 shooter
+					new Pose3d(0.5, 0, 0.35, new Rotation3d(0, 0, 0))  // model_1 extender
 				});
 			
 
