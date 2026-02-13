@@ -104,6 +104,9 @@ public class RobotContainer {
 	// Drive Simulation
 	private SwerveDriveSimulation driveSimulation = null;
 
+	// Fuel simulation (robot-ball collision in sim)
+	private final FuelSim fuelSim = new FuelSim();
+
 	// Field view (robot pose)
 	private final Field2d field = new Field2d();
 
@@ -298,8 +301,7 @@ public class RobotContainer {
    * (length).
    */
   private void configureFuelSim() {
-    FuelSim instance = FuelSim.getInstance();
-    instance.spawnStartingFuel();
+    fuelSim.spawnStartingFuel();
 
     // Width (left to right): distance between front-left and front-right modules
     double robotWidthMeters =
@@ -309,18 +311,18 @@ public class RobotContainer {
         TunerConstants.FrontLeft.LocationX - TunerConstants.BackLeft.LocationX;
     double bumperHeightMeters = 0.35;
 
-    instance.registerRobot(
+    fuelSim.registerRobot(
         robotWidthMeters,
         robotLengthMeters,
         bumperHeightMeters,
         drive::getPose,
         drive::getFieldRelativeChassisSpeeds);
 
-    instance.start();
+    fuelSim.start();
 
 		SmartDashboard.putData(Commands.runOnce(() -> {
-						FuelSim.getInstance().clearFuel();
-						FuelSim.getInstance().spawnStartingFuel();
+						fuelSim.clearFuel();
+						fuelSim.spawnStartingFuel();
 				})
 				.withName("Reset Fuel")
 				.ignoringDisable(true));
@@ -462,5 +464,8 @@ public class RobotContainer {
 
 		// Update field view
 		field.setRobotPose(robotPose);
+
+		// Fuel sim (robot-ball collision)
+		fuelSim.updateSim();
 	}
 }
