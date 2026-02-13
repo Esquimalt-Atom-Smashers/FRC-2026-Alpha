@@ -18,7 +18,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -105,9 +104,8 @@ public class RobotContainer {
 	// Drive Simulation
 	private SwerveDriveSimulation driveSimulation = null;
 
-	// Field view (robot + turret pose) – visible in SmartDashboard/Glass when running sim
+	// Field view (robot pose)
 	private final Field2d field = new Field2d();
-	private final FieldObject2d turretObject = field.getObject("Turret");
 
 	// Dashboard inputs
 	private final LoggedDashboardChooser<Command> autoChooser;
@@ -279,11 +277,11 @@ public class RobotContainer {
 				"Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
 
-		// Record zeroed robot components (model_0 shooter, model_1 extender)
+		// Record zeroed robot components (model_0 turret, model_1 extender) – initial only; updated in updateSimulation()
 		Logger.recordOutput("ZeroedRobotComponents", new Pose3d[] {new Pose3d(), new Pose3d()});
 		Logger.recordOutput("FinalComponentPoses",
 				new Pose3d[] {
-					new Pose3d(-0.17, 0.05, 0.35, new Rotation3d(0, 0, 0)), // model_0 shooter
+					new Pose3d(-0.17, 0.05, 0.35, new Rotation3d(0, 0, 0)), // model_0 turret
 					new Pose3d(0.5, 0, 0.35, new Rotation3d(0, 0, 0))  // model_1 extender
 				});
 			
@@ -452,29 +450,17 @@ public class RobotContainer {
 		if (Constants.currentMode != Constants.Mode.SIM) return;
 
 		SimulatedArena.getInstance().simulationPeriodic();
+
+		// Robot pose for visualization
 		Pose2d robotPose = driveSimulation.getSimulatedDriveTrainPose();
 		Logger.recordOutput("FieldSimulation/RobotPosition", robotPose);
 
-		// Turret pose in field frame
-		double robotX = robotPose.getX();
-		double robotY = robotPose.getY();
-		double robotTheta = robotPose.getRotation().getRadians();
-		double dx = ShooterConstants.robotToTurret.getX();
-		double dy = ShooterConstants.robotToTurret.getY();
-		double turretX = robotX + dx * Math.cos(robotTheta) - dy * Math.sin(robotTheta);
-		double turretY = robotY + dx * Math.sin(robotTheta) + dy * Math.cos(robotTheta);
-		Rotation2d turretAngle = robotPose.getRotation().plus(turret.getPosition());
-		Pose2d turretPose = new Pose2d(turretX, turretY, turretAngle);
-		Logger.recordOutput("FieldSimulation/TurretPose", turretPose);
+		// Robot-relative component poses for visualization
+		Pose3d turretComponentPose = new Pose3d(-0.17, 0.05, 0.35, new Rotation3d(0, 0, turret.getPosition().getRadians() - Math.PI / 2.0));
+		Pose3d extenderComponentPose = new Pose3d(0.5, 0, 0.35, new Rotation3d(0, 0, 0));
+		Logger.recordOutput("FinalComponentPoses", new Pose3d[] {turretComponentPose, extenderComponentPose});
 
-		// 3D turret pose (Z from robotToTurret) so it shows in the air in 3D view like camera poses
-		double turretZ = ShooterConstants.robotToTurret.getZ();
-		Pose3d turretPose3d =
-				new Pose3d(turretX, turretY, turretZ, new Rotation3d(0, 0, turretAngle.getRadians()));
-		Logger.recordOutput("FieldSimulation/TurretPose3d", turretPose3d);
-
-		// Update field view so you can see robot and turret direction in the dashboard
+		// Update field view
 		field.setRobotPose(robotPose);
-		turretObject.setPose(turretPose);
 	}
 }

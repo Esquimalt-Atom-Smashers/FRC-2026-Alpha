@@ -34,15 +34,15 @@ public class Turret extends SubsystemBase {
     Logger.recordOutput("Turret/PositionDegrees", getPosition().getDegrees());
     Logger.recordOutput("Turret/HubDegrees", getHubAngleRelativeToRobot().getDegrees());
 
-    // If the robot is disabled, no power to turret
+    // If the robot is disabled, reset turret to left 90° (encoder position 0)
     if (DriverStation.isDisabled()) {
-      turretIO.stop();
+      turretIO.setTargetPosition(0.0);
       return;
     }
 
     // Calculate and set the target turret angle in radians (relative to robot frame)
     double hubRadRelativeToRobot = MathUtil.clamp(hubAngleRelativeToRobot.getRadians(), kMinAngleRad, kMaxAngleRad);
-    double targetAngleRad = hubRadRelativeToRobot + kEncoderZeroOffsetRad;
+    double targetAngleRad = hubRadRelativeToRobot - kEncoderZeroOffsetRad;
     turretIO.setTargetPosition(targetAngleRad);
   } // End periodic
 

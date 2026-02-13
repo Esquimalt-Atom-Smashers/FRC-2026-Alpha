@@ -16,9 +16,9 @@ public final class TurretConstants {
 
   /**
    * Encoder zero offset (radians). Added to raw encoder so that 0 = turret pointing robot-forward.
-   * If when the turret is forward the encoder reads 0.5 rad, set this to -0.5.
+   * Turret starts facing left 90°; when encoder reads 0 there, offset = +π/2 so reported position is +90°.
    */
-  public static final double kEncoderZeroOffsetRad = 0.0;
+  public static final double kEncoderZeroOffsetRad = Math.PI / 2.0;
 
   /** PID gains for onboard position control and for sim software control. */
   public static final double kP = 7.0;
