@@ -19,8 +19,11 @@ public final class AgitatorConstants { // TODO: Add correct values
   /** Set true if positive velocity spins the agitator the opposite direction. */
   public static final boolean kMotorInverted = false;
 
-  /** Target velocity (rad/s, output shaft) when running. */ // TODO: Tune for reliable transfer.
-  public static final double kTargetVelocityRadsPerSec = Units.rotationsPerMinuteToRadiansPerSecond(3000.0);
+  /** Velocity (rad/s) when staging (slow pre-load). */
+  public static final double kStagingVelocityRadsPerSec = Units.rotationsPerMinuteToRadiansPerSecond(200.0);
+
+  /** Velocity (rad/s) when shooting. */
+  public static final double kShootingVelocityRadsPerSec = Units.rotationsPerMinuteToRadiansPerSecond(3000.0);
 
   /** Velocity PIDF gains (onboard and sim). */
   public static final double kP = 0.0001;
