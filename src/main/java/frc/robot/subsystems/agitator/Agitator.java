@@ -40,7 +40,7 @@ public class Agitator extends SubsystemBase {
       return;
     }
 
-    // Set the agitator voltage based on the current mode
+    // Set the Agitator voltage based on the current mode
     switch (mode) {
       case IDLE:
         agitatorIO.stop();
@@ -80,7 +80,7 @@ public class Agitator extends SubsystemBase {
 
   /** Get the current target voltage. */
   public double getTargetVoltage() {
-    return mode == Mode.IDLE ? 0.0 : targetVoltage;
+    return targetVoltage;
   } // End getTargetVoltage
 
   /** Current mode. */

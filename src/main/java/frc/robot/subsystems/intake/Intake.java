@@ -2,18 +2,25 @@ package frc.robot.subsystems.intake;
 
 import static frc.robot.subsystems.intake.IntakeConstants.*;
 
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
-/** Intake subsystem: one motor, velocity controlled (run at target speed or coast). */
+/** Intake subsystem: one motor, voltage controlled (run or coast). */
 public class Intake extends SubsystemBase {
+
+  /** Intake mode: idle, intaking (pull in), or reversing (spit out). */
+  public enum Mode {
+    IDLE,
+    INTAKING,
+    REVERSING
+  }
 
   private final IntakeIO intakeIO;
   private final IntakeIO.IntakeIOInputs intakeInputs = new IntakeIO.IntakeIOInputs();
 
-  private boolean isRunning = false;
+  private Mode mode = Mode.IDLE;
+  private double targetVoltage = kIdleVoltage;
 
   public Intake(IntakeIO io) {
     intakeIO = io;
@@ -23,45 +30,61 @@ public class Intake extends SubsystemBase {
   public void periodic() {
     intakeIO.updateInputs(intakeInputs);
     Logger.recordOutput("Intake/Inputs/MotorConnected", intakeInputs.motorConnected);
-    Logger.recordOutput("Intake/Inputs/VelocityRadsPerSec", intakeInputs.velocityRadsPerSec);
+    Logger.recordOutput("Intake/Inputs/TargetVolts", getTargetVoltage());
     Logger.recordOutput("Intake/Inputs/AppliedVolts", intakeInputs.appliedVolts);
     Logger.recordOutput("Intake/Inputs/SupplyCurrentAmps", intakeInputs.supplyCurrentAmps);
-    Logger.recordOutput("Intake/VelocityRpm", getVelocityRpm());
+    Logger.recordOutput("Intake/Mode", mode.name());
 
     if (DriverStation.isDisabled()) {
       intakeIO.stop();
       return;
     }
 
-    if (isRunning) {
-      intakeIO.setTargetVelocity(kTargetVelocityRadsPerSec);
-    } else {
-      intakeIO.stop();
+    // Set the Intake voltage based on the current mode
+    switch (mode) {
+      case IDLE:
+        intakeIO.stop();
+        break;
+      case INTAKING:
+      case REVERSING:
+        intakeIO.setVoltage(targetVoltage);
+        break;
+      default:
+        intakeIO.stop();
+        break;
     }
   } // End periodic
 
-  /** Run the intake at the configured target velocity. */
-  public void run() {
-    isRunning = true;
-  } // End run
+  /** Set mode to idle (motor stopped). */
+  public void setIdleMode() {
+    mode = Mode.IDLE;
+    targetVoltage = kIdleVoltage;
+  } // End setIdleMode
 
-  /** Stop the intake (coast). */
-  public void stop() {
-    isRunning = false;
-  } // End stop
+  /** Set mode to intaking (pull in at intaking voltage). */
+  public void setIntakingMode() {
+    mode = Mode.INTAKING;
+    targetVoltage = kIntakingVoltage;
+  } // End setIntakingMode
 
-  /** Whether the intake is currently commanded to run. */
-  public boolean isRunning() {
-    return isRunning;
-  } // End isRunning
+  /** Set mode to reversing (spit out at reversing voltage). */
+  public void setReversingMode() {
+    mode = Mode.REVERSING;
+    targetVoltage = -kReversingVoltage;
+  } // End setReversingMode
 
-  /** Current velocity (rad/s). */
-  public double getVelocityRadsPerSec() {
-    return intakeInputs.velocityRadsPerSec;
-  } // End getVelocityRadsPerSec
+  /** Set the target voltage used when in INTAKING or REVERSING. */
+  public void setTargetVoltage(double volts) {
+    targetVoltage = volts;
+  } // End setTargetVoltage
 
-  /** Current velocity (RPM). */
-  public double getVelocityRpm() {
-    return Units.radiansPerSecondToRotationsPerMinute(intakeInputs.velocityRadsPerSec);
-  } // End getVelocityRpm
+  /** Get the current target voltage. */
+  public double getTargetVoltage() {
+    return targetVoltage;
+  } // End getTargetVoltage
+
+  /** Current mode. */
+  public Mode getMode() {
+    return mode;
+  } // End getMode
 }

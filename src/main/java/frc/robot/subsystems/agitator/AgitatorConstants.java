@@ -2,24 +2,24 @@ package frc.robot.subsystems.agitator;
 
 import com.revrobotics.spark.config.SparkBaseConfig;
 
-/** Constants for the agitator (intake-to-transfer) subsystem. */
+/** Constants for the Agitator (intake-to-transfer) subsystem. */
 public final class AgitatorConstants { // TODO: Add correct values
 
   private AgitatorConstants() {}
 
-  /** CAN ID of the agitator motor (NEO 550 on SPARK MAX). */
+  /** CAN ID of the Agitator motor (NEO 550 on SPARK MAX). */
   public static final int kMotorId = 20;
 
   /** Idle behavior when output is zero (coast or brake). */
   public static final SparkBaseConfig.IdleMode kIdleMode = SparkBaseConfig.IdleMode.kCoast;
 
-  /** Set true if positive voltage spins the agitator the opposite direction. */
+  /** Set true if positive voltage spins the Agitator the opposite direction. */
   public static final boolean kMotorInverted = true;
 
-  /** Smart current limit (amps). */
+  /** Smart current limit. */
   public static final int kSmartCurrentLimitAmps = 25;
 
-  /** Open-loop ramp time (s) from 0 to full output. Limits current spikes on step changes. */
+  /** Open-loop ramp time from 0 to full output. Limits current spikes on step changes. */
   public static final double kOpenLoopRampRateSec = 0.3;
 
   /** Max voltage magnitude applied to the motor. */

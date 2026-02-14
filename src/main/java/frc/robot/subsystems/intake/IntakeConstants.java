@@ -1,31 +1,36 @@
 package frc.robot.subsystems.intake;
 
-import edu.wpi.first.math.util.Units;
+import com.revrobotics.spark.config.SparkBaseConfig;
 
-/** Constants for the intake subsystem. */
+/** Constants for the Intake (one motor, voltage controlled) subsystem. */
 public final class IntakeConstants { // TODO: Add correct values
 
   private IntakeConstants() {}
 
-  /** CAN ID of the intake motor (NEO 550 on SPARK MAX). */
+  /** CAN ID of the Intake motor (NEO 550 on SPARK MAX). */
   public static final int kMotorId = 0;
 
-  /** Output rotations per motor rotation (1.0 = 1:1). */
-  public static final double kGearRatio = 1.0;
+  /** Idle behavior when output is zero (coast or brake). */
+  public static final SparkBaseConfig.IdleMode kIdleMode = SparkBaseConfig.IdleMode.kCoast;
 
-  /** Max voltage magnitude applied to the motor. */
-  public static final double kMaxVoltage = 12.0;
-
-  /** Set true if positive velocity spins the intake the opposite direction. */
+  /** Set true if positive voltage spins the Intake the opposite direction. */
   public static final boolean kMotorInverted = false;
 
-  /** Target velocity (rad/s, output shaft) when running. */
-  public static final double kTargetVelocityRadsPerSec = Units.rotationsPerMinuteToRadiansPerSecond(3000.0);
+  /** Smart current limit. */
+  public static final int kSmartCurrentLimitAmps = 25;
 
-  /** Velocity PIDF gains (onboard and sim). */
-  public static final double kP = 0.0001;
-  public static final double kI = 0.0;
-  public static final double kD = 0.0;
-  public static final double kV = 0.0002;
-  public static final double kS = 0.0;
+  /** Open-loop ramp time from 0 to full output. Limits current spikes on step changes. */
+  public static final double kOpenLoopRampRateSec = 0.3;
+
+  /** Max voltage magnitude applied to the motor. */
+  public static final double kMaxVoltage = 8.0;
+
+  /** Voltage when idle. */
+  public static final double kIdleVoltage = 0.0;
+
+  /** Voltage when intaking (positive = pull in). */
+  public static final double kIntakingVoltage = 5.0;
+
+  /** Voltage magnitude when reversing (negative = spit out). */
+  public static final double kReversingVoltage = -2.0;
 }
