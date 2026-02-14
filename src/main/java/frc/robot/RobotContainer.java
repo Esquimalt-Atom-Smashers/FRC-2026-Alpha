@@ -492,20 +492,28 @@ public class RobotContainer {
 				operatorController.y().onTrue(
 						Commands.runOnce(
 								() -> {
+									double next = Math.min(AgitatorConstants.kMaxVoltage, agitator.getTargetVoltage() + stepVoltage);
 									if (agitator.getMode() == Agitator.Mode.IDLE) {
 										agitator.setStagingMode();
 										agitator.setTargetVoltage(stepVoltage);
 									} else {
-										agitator.setTargetVoltage(
-												Math.min(AgitatorConstants.kMaxVoltage, agitator.getTargetVoltage() + stepVoltage));
+										agitator.setTargetVoltage(next);
+									}
+									if (next == 0) {
+										agitator.setIdleMode();
 									}
 								},
 								agitator));
 				operatorController.a().onTrue(
 						Commands.runOnce(
 								() -> {
-									double next = Math.max(-12, agitator.getTargetVoltage() - stepVoltage);
-									agitator.setTargetVoltage(next);
+									double next = Math.max(-AgitatorConstants.kMaxVoltage, agitator.getTargetVoltage() - stepVoltage);
+									if (agitator.getMode() == Agitator.Mode.IDLE) {
+										agitator.setStagingMode();
+										agitator.setTargetVoltage(-stepVoltage);
+									} else {
+										agitator.setTargetVoltage(next);
+									}
 									if (next == 0) {
 										agitator.setIdleMode();
 									}
@@ -518,31 +526,39 @@ public class RobotContainer {
 				final double stepVoltage = 0.25; // TODO: Set step voltage
 				operatorController.leftBumper().onTrue(
 						Commands.runOnce(
-								() -> {
-									if (transfer.getMode() == Transfer.Mode.IDLE) {
-										transfer.setStagingMode();
-										transfer.setTargetVoltage(stepVoltage);
-									} else {
-										transfer.setTargetVoltage(
-												Math.min(TransferConstants.kMaxVoltage, transfer.getTargetVoltage() + stepVoltage));
-									}
-								},
-								transfer));
+							() -> {
+								double next = Math.min(TransferConstants.kMaxVoltage, transfer.getTargetVoltage() + stepVoltage);
+								if (transfer.getMode() == Transfer.Mode.IDLE) {
+									transfer.setStagingMode();
+									transfer.setTargetVoltage(stepVoltage);
+								} else {
+									transfer.setTargetVoltage(next);
+								}
+								if (next == 0) {
+									transfer.setIdleMode();
+								}
+							},
+							transfer));
 				operatorController.rightBumper().onTrue(
 						Commands.runOnce(
-								() -> {
-									double next = Math.max(0, transfer.getTargetVoltage() - stepVoltage);
+							() -> {
+								double next = Math.max(-TransferConstants.kMaxVoltage, transfer.getTargetVoltage() - stepVoltage);
+								if (transfer.getMode() == Transfer.Mode.IDLE) {
+									transfer.setStagingMode();
+									transfer.setTargetVoltage(-stepVoltage);
+								} else {
 									transfer.setTargetVoltage(next);
-									if (next == 0) {
-										transfer.setIdleMode();
-									}
-								},
-								transfer));
+								}
+								if (next == 0) {
+									transfer.setIdleMode();
+								}
+							},
+							transfer));
 			}
 
 			// Manual Override for Flywheel Velocity
       if (manualOverride && flywheel != null) {
-        final double stepRpm = 50.0;
+        final double stepRpm = 50.0; // TODO: Set step velocity
         final double stepRadsPerSec = Units.rotationsPerMinuteToRadiansPerSecond(stepRpm);
         operatorController.povUp().onTrue(
             Commands.runOnce(
