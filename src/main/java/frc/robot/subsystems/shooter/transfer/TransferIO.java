@@ -2,7 +2,7 @@ package frc.robot.subsystems.shooter.transfer;
 
 import org.littletonrobotics.junction.AutoLog;
 
-/** IO interface for the transfer (motor + colour sensor), voltage controlled. */
+/** IO interface for the Transfer (one motor, voltage controlled; optional colour sensor). */
 public interface TransferIO {
 
   @AutoLog
@@ -16,7 +16,7 @@ public interface TransferIO {
   /** Update inputs from the hardware. */
   default void updateInputs(TransferIOInputs inputs) {}
 
-  /** Set the motor output voltage (V). */
+  /** Set the motor output voltage. */
   default void setVoltage(double volts) {}
 
   /** Stop the motor (coast). */

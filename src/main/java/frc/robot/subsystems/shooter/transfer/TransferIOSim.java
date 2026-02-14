@@ -8,7 +8,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
-/** Transfer IO for simulation; NEO 550 voltage control, no colour sensor. */
+/** Transfer IO for simulation; NEO 550 voltage control. */
 public class TransferIOSim implements TransferIO {
 
   private static final double kLoopPeriodSecs = 0.02;
@@ -28,7 +28,7 @@ public class TransferIOSim implements TransferIO {
       appliedVolts = 0.0;
       motorSim.setInputVoltage(0.0);
     } else {
-      motorSim.setInputVoltage(MathUtil.clamp(appliedVolts, -kMaxVoltage, kMaxVoltage));
+      motorSim.setInputVoltage(appliedVolts);
     }
     motorSim.update(kLoopPeriodSecs);
 

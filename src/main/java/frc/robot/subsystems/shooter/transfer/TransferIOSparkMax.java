@@ -3,17 +3,17 @@ package frc.robot.subsystems.shooter.transfer;
 import static frc.robot.subsystems.shooter.transfer.TransferConstants.*;
 
 // import com.revrobotics.ColorSensorV3;
+import frc.robot.Constants;
 import com.revrobotics.REVLibError;
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 // import edu.wpi.first.wpilibj.I2C;
 
-/** Transfer IO using SPARK MAX (NEO 550) voltage control and REV Color Sensor V3. */
+/** Transfer IO using a single SPARK MAX (NEO 550) with voltage control and optional colour sensor. */
 public class TransferIOSparkMax implements TransferIO {
 
   private final SparkMax motor;
@@ -24,8 +24,11 @@ public class TransferIOSparkMax implements TransferIO {
     // colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
 
     var sparkMaxConfig = new SparkMaxConfig();
-    sparkMaxConfig.idleMode(SparkBaseConfig.IdleMode.kCoast);
+    sparkMaxConfig.idleMode(kIdleMode);
     sparkMaxConfig.inverted(kMotorInverted);
+    sparkMaxConfig.smartCurrentLimit(kSmartCurrentLimitAmps);
+    sparkMaxConfig.openLoopRampRate(kOpenLoopRampRateSec);
+    sparkMaxConfig.voltageCompensation(Constants.kNominalVoltage);
     motor.configure(sparkMaxConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
   } // End TransferIOSparkMax Constructor
 
@@ -41,7 +44,7 @@ public class TransferIOSparkMax implements TransferIO {
   @Override
   public void setVoltage(double volts) {
     double clamped = MathUtil.clamp(volts, -kMaxVoltage, kMaxVoltage);
-    motor.setVoltage(kMotorInverted ? -clamped : clamped);
+    motor.setVoltage(clamped);
   } // End setVoltage
 
   @Override

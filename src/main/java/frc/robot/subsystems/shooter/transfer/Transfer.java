@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
-/** Transfer subsystem: staging (low voltage, stop when sensor tripped) or shooting (high voltage). */
+/** Transfer subsystem: staging (low voltage, stop when sensor tripped (optional)) or shooting (high voltage). */
 public class Transfer extends SubsystemBase {
 
   /** Transfer mode: idle, staging (slow pre-load), or shooting. */
@@ -20,6 +20,7 @@ public class Transfer extends SubsystemBase {
   private final TransferIO.TransferIOInputs transferInputs = new TransferIO.TransferIOInputs();
 
   private Mode mode = Mode.IDLE;
+  private boolean colourSensorEnabled = false;
   private boolean ballStaged = false;
   private double targetVoltage = kIdleVoltage;
 
@@ -31,6 +32,7 @@ public class Transfer extends SubsystemBase {
   public void periodic() {
     transferIO.updateInputs(transferInputs);
     Logger.recordOutput("Transfer/Inputs/MotorConnected", transferInputs.motorConnected);
+    Logger.recordOutput("Transfer/Inputs/TargetVolts", getTargetVoltage());
     Logger.recordOutput("Transfer/Inputs/AppliedVolts", transferInputs.appliedVolts);
     Logger.recordOutput("Transfer/Inputs/SupplyCurrentAmps", transferInputs.supplyCurrentAmps);
     Logger.recordOutput("Transfer/Inputs/ColorSensorTripped", transferInputs.colorSensorTripped);
@@ -42,12 +44,13 @@ public class Transfer extends SubsystemBase {
       return;
     }
 
+    // Set the Transfer voltage based on the current mode
     switch (mode) {
       case IDLE:
         transferIO.stop();
         break;
       case STAGING:
-        if (transferInputs.colorSensorTripped) {
+        if (colourSensorEnabled && transferInputs.colorSensorTripped) {
           transferIO.stop();
           ballStaged = true;
           mode = Mode.IDLE;
@@ -64,33 +67,34 @@ public class Transfer extends SubsystemBase {
     }
   } // End periodic
 
-  /** Set mode to staging (low voltage; stop when colour sensor tripped). */
+  /** Set mode to idle (motor stopped). */
+  public void setIdleMode() {
+    mode = Mode.IDLE;
+    targetVoltage = kIdleVoltage;
+  } // End setIdleMode
+
+  /** Set mode to staging (slow pre-load; stop when colour sensor tripped (optional)). */
   public void setStagingMode() {
     mode = Mode.STAGING;
     targetVoltage = kStagingVoltage;
   } // End setStagingMode
 
-  /** Set mode to shooting (high voltage); clears ballStaged. */
+  /** Set mode to shooting (fast load); clears ballStaged. */
   public void setShootingMode() {
     mode = Mode.SHOOTING;
     ballStaged = false;
     targetVoltage = kShootingVoltage;
   } // End setShootingMode
 
-  /** Set the target voltage (V) used when in STAGING or SHOOTING. */
+  /** Set the target voltage. */
   public void setTargetVoltage(double volts) {
     targetVoltage = volts;
   } // End setTargetVoltage
 
-  /** Get the current target voltage (V). */
+  /** Get the current target voltage. */
   public double getTargetVoltage() {
-    return mode == Mode.IDLE ? 0.0 : targetVoltage;
+    return targetVoltage;
   } // End getTargetVoltage
-
-  /** Set mode to idle (motor stopped). */
-  public void setIdleMode() {
-    mode = Mode.IDLE;
-  } // End setIdleMode
 
   /** Current mode. */
   public Mode getMode() {

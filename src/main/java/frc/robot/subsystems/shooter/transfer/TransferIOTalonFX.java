@@ -16,7 +16,7 @@ import static frc.robot.util.PhoenixUtil.tryUntilOk;
 
 import frc.robot.generated.TunerConstants;
 
-/** Transfer IO using Talon FX (Kraken) voltage control and REV Color Sensor V3. */
+/** Transfer IO using Talon FX (Kraken) with voltage control and optional colour sensor. */
 public class TransferIOTalonFX implements TransferIO {
 
   private final TalonFX motor;
@@ -33,6 +33,8 @@ public class TransferIOTalonFX implements TransferIO {
         kMotorInverted
             ? InvertedValue.Clockwise_Positive
             : InvertedValue.CounterClockwise_Positive;
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
+    config.CurrentLimits.StatorCurrentLimit = kStatorCurrentLimitAmps;
 
     tryUntilOk(5, () -> motor.getConfigurator().apply(config, 0.25));
   } // End TransferIOTalonFX Constructor
