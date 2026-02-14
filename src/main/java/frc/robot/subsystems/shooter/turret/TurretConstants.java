@@ -9,16 +9,15 @@ public final class TurretConstants {
   private TurretConstants() {}
 
   /** CAN ID of the turret motor. */
-  public static final int kMotorId = 5;
+  public static final int kMotorId = 10;
 
   /** Turret radians per motor rotation (output / input). 1.0 = 1:1. */
-  public static final double kGearRatio = 20.0;
+  public static final double kGearRatio = 42.0;
 
   /**
    * Encoder zero offset (radians). Added to raw encoder so that 0 = turret pointing robot-forward.
-   * Turret starts facing left 90°; when encoder reads 0 there, offset = +π/2 so reported position is +90°.
    */
-  public static final double kEncoderZeroOffsetRad = Math.PI / 2.0;
+  public static final double kEncoderZeroOffsetRad = 0;
 
   /** PID gains for onboard position control and for sim software control. */
   public static final double kP = 7.0;
@@ -26,10 +25,10 @@ public final class TurretConstants {
   public static final double kD = 0.0;
 
   /** Minimum turret angle (radians). */
-  public static final double kMinAngleRad = Units.degreesToRadians(-180.0);
+  public static final double kMinAngleRad = Units.degreesToRadians(-45.0);
 
   /** Maximum turret angle (radians). */
-  public static final double kMaxAngleRad = Units.degreesToRadians(180.0);
+  public static final double kMaxAngleRad = Units.degreesToRadians(45.0);
 
   /** Max voltage magnitude applied to the motor. */
   public static final double kMaxVoltage = 12.0;

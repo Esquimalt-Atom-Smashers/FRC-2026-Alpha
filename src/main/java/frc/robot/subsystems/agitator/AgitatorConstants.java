@@ -6,10 +6,10 @@ public final class AgitatorConstants { // TODO: Add correct values
   private AgitatorConstants() {}
 
   /** CAN ID of the agitator motor (NEO 550 on SPARK MAX). */
-  public static final int kMotorId = 0;
+  public static final int kMotorId = 20;
 
   /** Max voltage magnitude applied to the motor. */
-  public static final double kMaxVoltage = 12.0;
+  public static final double kMaxVoltage = 10.0;
 
   /** Set true if positive voltage spins the agitator the opposite direction. */
   public static final boolean kMotorInverted = false;
@@ -21,5 +21,5 @@ public final class AgitatorConstants { // TODO: Add correct values
   public static final double kStagingVoltage = 2.0;
 
   /** Voltage when shooting. */
-  public static final double kShootingVoltage = 12.0;
+  public static final double kShootingVoltage = 6.0;
 }

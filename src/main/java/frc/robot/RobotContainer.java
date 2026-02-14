@@ -49,8 +49,8 @@ import frc.robot.subsystems.shooter.ShooterSimVisualizer;
 import frc.robot.subsystems.shooter.transfer.Transfer;
 import frc.robot.subsystems.shooter.transfer.TransferConstants;
 import frc.robot.subsystems.shooter.transfer.TransferIO;
+import frc.robot.subsystems.shooter.transfer.TransferIOBrushedSparkMax;
 import frc.robot.subsystems.shooter.transfer.TransferIOSim;
-import frc.robot.subsystems.shooter.transfer.TransferIOSparkMax;
 import frc.robot.subsystems.shooter.turret.Turret;
 import frc.robot.subsystems.shooter.turret.TurretIO;
 import frc.robot.subsystems.shooter.turret.TurretIOSim;
@@ -89,7 +89,7 @@ public class RobotContainer {
 
 	// Subsystems Toggle
 	private boolean isDriveEnabled = true;
-	private boolean isVisionEnabled = false;
+	private boolean isVisionEnabled = true;
 	private boolean isIntakeEnabled = false;
 	private boolean isAgitatorEnabled = true;
 	private boolean isTransferEnabled = true;
@@ -126,7 +126,7 @@ public class RobotContainer {
 	private final LoggedDashboardChooser<Command> autoChooser;
 
   // Manual Override
-  public static boolean manualOverride = false;
+  public static boolean manualOverride = true;
 
   // Face Target mode
   private boolean isFacingHub = false;
@@ -175,7 +175,7 @@ public class RobotContainer {
 				// Subsystems
 				intake = isIntakeEnabled ? new Intake(new IntakeIOSparkMax()) : new Intake(new IntakeIO() {});
 				agitator = isAgitatorEnabled ? new Agitator(new AgitatorIOSparkMax()) : new Agitator(new AgitatorIO() {});
-				transfer = isTransferEnabled ? new Transfer(new TransferIOSparkMax()) : new Transfer(new TransferIO() {});
+				transfer = isTransferEnabled ? new Transfer(new TransferIOBrushedSparkMax()) : new Transfer(new TransferIO() {});
 				turret = isTurretEnabled ? new Turret(new TurretIOSparkMax()) : new Turret(new TurretIO() {});
 				hood = isHoodEnabled ? new Hood(new HoodIOSparkMax()) : new Hood(new HoodIO() {});
 				flywheel = isFlywheelEnabled ? new Flywheel(new FlywheelIOTalonFX()) : new Flywheel(new FlywheelIO() {});
@@ -317,7 +317,7 @@ public class RobotContainer {
 
     // Configure button bindings
     configureDriverBindings(true); // False to disable driving
-    configureOperatorBindings(false); // False to disable operator controls
+    configureOperatorBindings(true); // False to disable operator controls
   }
 
 
@@ -436,26 +436,11 @@ public class RobotContainer {
 			driverController.rightStick().whileTrue(DriveCommands.pathfindThenFollowPath(drive, "DriveToHub"));
 		} // End else (Drive enabled)
 
-		// Shoot when flywheel is at speed
-		// Button held = shoot (Agitator and Transfer set to shooting mode, Agitator delays by 0.25s); on release, set both to staging mode
-		Command shootCommand =
-				Commands.parallel(
-						Commands.runOnce(
-								() -> {
-									if (transfer != null) transfer.setShootingMode();
-								},
-								transfer,
-								agitator),
-						Commands.sequence(
-								Commands.waitSeconds(0.25),
-								Commands.run(
-										() -> {
-											if (agitator != null) agitator.setShootingMode();
-										},
-										agitator)));
-		driverController.a().whileTrue(
+    // Shoot when flywheel is at speed
+    // Button held = shoot (Agitator and Transfer set to shooting mode, Agitator delays by 0.25s); on release, set both to staging mode
+ 		driverController.a().whileTrue(
 				Commands.either(
-						shootCommand,
+						new ShootCommandDeferred(transfer, agitator),
 						Commands.none(),
 						() -> flywheel != null && flywheel.getState() == FlywheelState.AT_SPEED));
 		driverController.a().onFalse(
@@ -471,8 +456,8 @@ public class RobotContainer {
 		driverController.b().onTrue(
 				Commands.runOnce(
 						() -> {
-							if (transfer != null) transfer.setStagingMode();
-							if (agitator != null) agitator.setStagingMode();
+							if (transfer != null) transfer.setIdleMode();
+							if (agitator != null) agitator.setIdleMode();
 						},
 						transfer,
 						agitator));
@@ -513,7 +498,7 @@ public class RobotContainer {
     if (enableOperatorControls) {
 			// Manual Override for Agitator Voltage (Y = +0.5 V, A = -0.5 V; from IDLE, Y enters STAGING so motor runs)
 			if (manualOverride && agitator != null) {
-				final double stepVoltage = 0.5;
+				final double stepVoltage = 0.25;
 				operatorController.y().onTrue(
 						Commands.runOnce(
 								() -> {
@@ -529,7 +514,7 @@ public class RobotContainer {
 				operatorController.a().onTrue(
 						Commands.runOnce(
 								() -> {
-									double next = Math.max(0, agitator.getTargetVoltage() - stepVoltage);
+									double next = Math.max(-12, agitator.getTargetVoltage() - stepVoltage);
 									agitator.setTargetVoltage(next);
 									if (next == 0) {
 										agitator.setIdleMode();
@@ -540,8 +525,8 @@ public class RobotContainer {
 
 			// Manual Override for Transfer Voltage (left = +0.5 V, right = -0.5 V; from IDLE, left enters STAGING)
 			if (manualOverride && transfer != null) {
-				final double stepVoltage = 0.5;
-				operatorController.leftBumper().onTrue(
+				final double stepVoltage = 0.25;
+				operatorController.x().onTrue(
 						Commands.runOnce(
 								() -> {
 									if (transfer.getMode() == Transfer.Mode.IDLE) {
@@ -553,7 +538,7 @@ public class RobotContainer {
 									}
 								},
 								transfer));
-				operatorController.rightBumper().onTrue(
+				operatorController.b().onTrue(
 						Commands.runOnce(
 								() -> {
 									double next = Math.max(0, transfer.getTargetVoltage() - stepVoltage);
@@ -663,5 +648,55 @@ public class RobotContainer {
 
 		// Fuel sim (robot-ball collision)
 		fuelSim.updateSim();
+	}
+
+	// TODO: Temporary inner Shooter class for testing, move to proper Shooter class later
+	/**
+	 * Wrapper that creates the shoot ParallelCommandGroup in initialize(), not at bind time, 
+	 * so the robot does not crash on startup. Cancels the inner command when the button
+	 * is released.
+	 */
+	private static final class ShootCommandDeferred extends Command {
+		private final Transfer transfer;
+		private final Agitator agitator;
+		private Command inner;
+
+		ShootCommandDeferred(Transfer transfer, Agitator agitator) {
+			this.transfer = transfer;
+			this.agitator = agitator;
+			addRequirements(transfer, agitator);
+		}
+
+		@Override
+		public void initialize() {
+			inner =
+					Commands.parallel(
+							Commands.runOnce(
+									() -> {
+										if (transfer != null) transfer.setShootingMode();
+									},
+									transfer,
+									agitator),
+							Commands.sequence(
+									Commands.waitSeconds(0.25),
+									Commands.run(
+											() -> {
+												if (agitator != null) agitator.setShootingMode();
+											},
+											agitator)));
+			inner.schedule();
+		}
+
+		@Override
+		public void end(boolean interrupted) {
+			if (inner != null) {
+				inner.cancel();
+			}
+		}
+
+		@Override
+		public boolean isFinished() {
+			return false;
+		}
 	}
 }

@@ -8,7 +8,7 @@ public final class FlywheelConstants { // TODO: Add correct values
   private FlywheelConstants() {}
 
   /** CAN ID of the flywheel motor. */
-  public static final int kMotorId = 6;
+  public static final int kMotorId = 7;
 
   /** Flywheel radius (m) for converting angular velocity to launch linear velocity. ~2 in. */
   public static final double kFlywheelRadiusMeters = 0.0508;
