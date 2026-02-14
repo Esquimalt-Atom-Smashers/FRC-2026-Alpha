@@ -8,13 +8,12 @@ import com.revrobotics.ResetMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel;
-import com.revrobotics.spark.config.SparkBaseConfig;
+import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.util.Units;
 
-/** Turret IO using a single SPARK MAX with onboard position control. */
+/** Turret IO using a single SPARK MAX (NEO 550) with onboard position control. */
 public class TurretIOSparkMax implements TurretIO {
 
   private final SparkMax motor;
@@ -27,7 +26,8 @@ public class TurretIOSparkMax implements TurretIO {
     encoder = motor.getEncoder();
 
     var sparkMaxConfig = new SparkMaxConfig();
-    sparkMaxConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
+    sparkMaxConfig.idleMode(kIdleMode);
+    sparkMaxConfig.smartCurrentLimit(kSmartCurrentLimitAmps);
     sparkMaxConfig
         .encoder
         .positionConversionFactor(1.0 / kGearRatio)

@@ -12,11 +12,11 @@ import org.littletonrobotics.junction.Logger;
 /** Turret subsystem: one motor with onboard position control, aimed at a hub angle. */
 public class Turret extends SubsystemBase {
 
-  private final TurretIO turretIO; // Hardware Abstraction IO Interface for the turret motors
-  private final TurretIO.TurretIOInputs turretInputs = new TurretIO.TurretIOInputs(); // Data Container for the turret values
-  private static final double kAtHubToleranceRad = Units.degreesToRadians(2.0);
+  private final TurretIO turretIO;
+  private final TurretIO.TurretIOInputs turretInputs = new TurretIO.TurretIOInputs();
 
-  private Rotation2d hubAngleRelativeToRobot = Rotation2d.kZero; // The angle to aim the turret at the hub
+  private static final double kAtHubToleranceRad = Units.degreesToRadians(2.0);
+  private Rotation2d hubAngleRelativeToRobot = Rotation2d.kZero;
 
   public Turret(TurretIO io) {
     turretIO = io;
@@ -24,26 +24,23 @@ public class Turret extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // Update the turret inputs and record the values
     turretIO.updateInputs(turretInputs);
+    double targetPositionRad = DriverStation.isDisabled() ? 0.0 : getClampedHubAngleRad() - kEncoderZeroOffsetRad;
     Logger.recordOutput("Turret/Inputs/MotorConnected", turretInputs.motorConnected);
+    Logger.recordOutput("Turret/Inputs/TargetPositionRads", targetPositionRad);
     Logger.recordOutput("Turret/Inputs/PositionRads", turretInputs.positionRads);
+    Logger.recordOutput("Turret/PositionDegrees", getPosition().getDegrees());
+    Logger.recordOutput("Turret/HubDegrees", getHubAngleRelativeToRobot().getDegrees());
     Logger.recordOutput("Turret/Inputs/VelocityRadsPerSec", turretInputs.velocityRadsPerSec);
     Logger.recordOutput("Turret/Inputs/AppliedVolts", turretInputs.appliedVolts);
     Logger.recordOutput("Turret/Inputs/SupplyCurrentAmps", turretInputs.supplyCurrentAmps);
-    Logger.recordOutput("Turret/PositionDegrees", getPosition().getDegrees());
-    Logger.recordOutput("Turret/HubDegrees", getHubAngleRelativeToRobot().getDegrees());
 
-    // If the robot is disabled, reset turret to left 90° (encoder position 0)
     if (DriverStation.isDisabled()) {
       turretIO.setTargetPosition(0.0);
       return;
     }
 
-    // Calculate and set the target turret angle in radians (relative to robot frame)
-    double hubRadRelativeToRobot = MathUtil.clamp(hubAngleRelativeToRobot.getRadians(), kMinAngleRad, kMaxAngleRad);
-    double targetAngleRad = hubRadRelativeToRobot - kEncoderZeroOffsetRad;
-    turretIO.setTargetPosition(targetAngleRad);
+    turretIO.setTargetPosition(targetPositionRad);
   } // End periodic
 
   /** Set the hub angle (robot frame: 0 = forward). Clamped to min/max in periodic. */
@@ -56,15 +53,20 @@ public class Turret extends SubsystemBase {
     return hubAngleRelativeToRobot;
   } // End getHubAngleRelativeToRobot
 
-  /** Get the current turret position (robot frame: 0 = forward). */
+  /** Get the current Turret position (robot frame: 0 = forward). */
   public Rotation2d getPosition() {
     return Rotation2d.fromRadians(turretInputs.positionRads + kEncoderZeroOffsetRad);
   } // End getPosition
 
-  /** Whether the turret is at the hub within tolerance. */
+  /** Whether the Turret is at the hub within tolerance. */
   public boolean aimedAtHub() {
-    double hubRadRelativeToRobot = MathUtil.clamp(hubAngleRelativeToRobot.getRadians(), kMinAngleRad, kMaxAngleRad);
+    double hubRadClamped = getClampedHubAngleRad();
     double currentAngleRad = turretInputs.positionRads + kEncoderZeroOffsetRad;
-    return Math.abs(MathUtil.angleModulus(currentAngleRad - hubRadRelativeToRobot)) <= kAtHubToleranceRad;
+    return Math.abs(MathUtil.angleModulus(currentAngleRad - hubRadClamped)) <= kAtHubToleranceRad;
   } // End aimedAtHub
+
+  /** Hub angle (robot frame) clamped to turret min/max, in radians. */
+  private double getClampedHubAngleRad() {
+    return MathUtil.clamp(hubAngleRelativeToRobot.getRadians(), kMinAngleRad, kMaxAngleRad);
+  } // End getClampedHubAngleRad
 }

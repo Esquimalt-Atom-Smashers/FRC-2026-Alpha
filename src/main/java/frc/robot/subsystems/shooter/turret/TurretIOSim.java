@@ -11,7 +11,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
-/** Turret IO for simulation; uses software PID (no onboard controller in sim). */
+/** Turret IO for simulation; Kraken with software position control. */
 public class TurretIOSim implements TurretIO {
 
   private static final double kLoopPeriodSecs = 0.02;
@@ -53,11 +53,10 @@ public class TurretIOSim implements TurretIO {
               - kD * velocityRotationsPerSec;
       appliedVolts = MathUtil.clamp(pidOutputVolts, -kMaxVoltage, kMaxVoltage);
 
-      motorSim.setInputVoltage(MathUtil.clamp(appliedVolts, -12.0, 12.0));
+      motorSim.setInputVoltage(MathUtil.clamp(appliedVolts, -kMaxVoltage, kMaxVoltage));
     }
     motorSim.update(kLoopPeriodSecs);
 
-    // Fill logged inputs for AdvantageKit
     inputs.motorConnected = true;
     inputs.positionRads = motorSim.getAngularPositionRad() / kGearRatio;
     inputs.velocityRadsPerSec = motorSim.getAngularVelocityRadPerSec() / kGearRatio;
