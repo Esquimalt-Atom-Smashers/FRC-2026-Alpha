@@ -2,13 +2,12 @@ package frc.robot.subsystems.agitator;
 
 import org.littletonrobotics.junction.AutoLog;
 
-/** IO interface for the agitator (one motor, velocity controlled). */
+/** IO interface for the agitator (one motor, voltage controlled). */
 public interface AgitatorIO {
 
   @AutoLog
   class AgitatorIOInputs {
     public boolean motorConnected = false;
-    public double velocityRadsPerSec = 0.0;
     public double appliedVolts = 0.0;
     public double supplyCurrentAmps = 0.0;
   }
@@ -16,8 +15,8 @@ public interface AgitatorIO {
   /** Update inputs from the hardware. */
   default void updateInputs(AgitatorIOInputs inputs) {}
 
-  /** Set the target velocity (rad/s, output shaft). */
-  default void setTargetVelocity(double targetVelocityRadsPerSec) {}
+  /** Set the motor output voltage (V). */
+  default void setVoltage(double volts) {}
 
   /** Stop the motor (coast). */
   default void stop() {}

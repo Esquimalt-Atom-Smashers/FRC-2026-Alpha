@@ -2,12 +2,11 @@ package frc.robot.subsystems.shooter.transfer;
 
 import static frc.robot.subsystems.shooter.transfer.TransferConstants.*;
 
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
-/** Transfer subsystem: staging (slow + stop when sensor tripped) or shooting (fast). */
+/** Transfer subsystem: staging (low voltage, stop when sensor tripped) or shooting (high voltage). */
 public class Transfer extends SubsystemBase {
 
   /** Transfer mode: idle, staging (slow pre-load), or shooting. */
@@ -22,23 +21,21 @@ public class Transfer extends SubsystemBase {
 
   private Mode mode = Mode.IDLE;
   private boolean ballStaged = false;
-  private double targetVelocityRadsPerSec = kStagingVelocityRadsPerSec;
+  private double targetVoltage = kIdleVoltage;
 
   public Transfer(TransferIO io) {
     transferIO = io;
-  }
+  } // End Transfer Constructor
 
   @Override
   public void periodic() {
     transferIO.updateInputs(transferInputs);
     Logger.recordOutput("Transfer/Inputs/MotorConnected", transferInputs.motorConnected);
-    Logger.recordOutput("Transfer/Inputs/VelocityRadsPerSec", transferInputs.velocityRadsPerSec);
     Logger.recordOutput("Transfer/Inputs/AppliedVolts", transferInputs.appliedVolts);
     Logger.recordOutput("Transfer/Inputs/SupplyCurrentAmps", transferInputs.supplyCurrentAmps);
     Logger.recordOutput("Transfer/Inputs/ColorSensorTripped", transferInputs.colorSensorTripped);
     Logger.recordOutput("Transfer/Mode", mode.name());
     Logger.recordOutput("Transfer/BallStaged", ballStaged);
-    Logger.recordOutput("Transfer/VelocityRpm", getVelocityRpm());
 
     if (DriverStation.isDisabled()) {
       transferIO.stop();
@@ -55,68 +52,53 @@ public class Transfer extends SubsystemBase {
           ballStaged = true;
           mode = Mode.IDLE;
         } else {
-          transferIO.setTargetVelocity(targetVelocityRadsPerSec);
+          transferIO.setVoltage(targetVoltage);
         }
         break;
       case SHOOTING:
-        transferIO.setTargetVelocity(targetVelocityRadsPerSec);
+        transferIO.setVoltage(targetVoltage);
         break;
       default:
         transferIO.stop();
         break;
     }
-  }
+  } // End periodic
 
-  /** Set mode to staging (slow velocity; stop when colour sensor tripped). */
+  /** Set mode to staging (low voltage; stop when colour sensor tripped). */
   public void setStagingMode() {
     mode = Mode.STAGING;
-    targetVelocityRadsPerSec = kStagingVelocityRadsPerSec;
-  }
+    targetVoltage = kStagingVoltage;
+  } // End setStagingMode
 
-  /** Set mode to shooting (high velocity); clears ballStaged. */
+  /** Set mode to shooting (high voltage); clears ballStaged. */
   public void setShootingMode() {
     mode = Mode.SHOOTING;
     ballStaged = false;
-    targetVelocityRadsPerSec = kShootingVelocityRadsPerSec;
-  }
+    targetVoltage = kShootingVoltage;
+  } // End setShootingMode
 
-  /** Set the target velocity (rad/s) */
-  public void setTargetVelocityRadsPerSec(double radsPerSec) {
-    targetVelocityRadsPerSec = radsPerSec;
-  }
+  /** Set the target voltage (V) used when in STAGING or SHOOTING. */
+  public void setTargetVoltage(double volts) {
+    targetVoltage = volts;
+  } // End setTargetVoltage
 
-  /** Get the current target velocity (rad/s). */
-  public double getTargetVelocityRadsPerSec() {
-    return mode == Mode.IDLE ? 0.0 : targetVelocityRadsPerSec;
-  }
-
-  /** Get the current target velocity (RPM). */
-  public double getTargetVelocityRpm() {
-    return Units.radiansPerSecondToRotationsPerMinute(getTargetVelocityRadsPerSec());
-  }
+  /** Get the current target voltage (V). */
+  public double getTargetVoltage() {
+    return mode == Mode.IDLE ? 0.0 : targetVoltage;
+  } // End getTargetVoltage
 
   /** Set mode to idle (motor stopped). */
   public void setIdleMode() {
     mode = Mode.IDLE;
-  }
+  } // End setIdleMode
 
   /** Current mode. */
   public Mode getMode() {
     return mode;
-  }
+  } // End getMode
 
   /** True when staging and colour sensor was tripped (ball at transfer). */
   public boolean isBallStaged() {
     return ballStaged;
-  }
-
-  /** Current velocity (rad/s). */
-  public double getVelocityRadsPerSec() {
-    return transferInputs.velocityRadsPerSec;
-  }
-
-  /** Current velocity (RPM). */
-  public double getVelocityRpm() {
-    return Units.radiansPerSecondToRotationsPerMinute(transferInputs.velocityRadsPerSec);
-  }
+  } // End isBallStaged
 }
