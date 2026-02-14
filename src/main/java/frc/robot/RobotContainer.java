@@ -486,6 +486,13 @@ public class RobotContainer {
   private void configureOperatorBindings(boolean enableOperatorControls) {
     // Operator Controls Enabled
     if (enableOperatorControls) {
+			// Set Agitator, Transfer, and Flywheel to idle mode when B is pressed
+			operatorController.b().onTrue(Commands.runOnce(() -> {
+				if (agitator != null) agitator.setIdleMode();
+				if (transfer != null) transfer.setIdleMode();
+				if (flywheel != null) flywheel.setState(FlywheelState.IDLE);
+			}, agitator, transfer, flywheel));
+
 			// Manual Override for Agitator Voltage (Y = +0.5 V, A = -0.5 V; from IDLE, Y enters STAGING so motor runs)
 			if (manualOverride && agitator != null) {
 				final double stepVoltage = 0.25; // TODO: Set step voltage
