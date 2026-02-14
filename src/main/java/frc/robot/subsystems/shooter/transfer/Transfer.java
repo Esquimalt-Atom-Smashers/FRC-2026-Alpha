@@ -22,6 +22,7 @@ public class Transfer extends SubsystemBase {
 
   private Mode mode = Mode.IDLE;
   private boolean ballStaged = false;
+  private double targetVelocityRadsPerSec = kStagingVelocityRadsPerSec;
 
   public Transfer(TransferIO io) {
     transferIO = io;
@@ -54,11 +55,11 @@ public class Transfer extends SubsystemBase {
           ballStaged = true;
           mode = Mode.IDLE;
         } else {
-          transferIO.setTargetVelocity(kStagingVelocityRadsPerSec);
+          transferIO.setTargetVelocity(targetVelocityRadsPerSec);
         }
         break;
       case SHOOTING:
-        transferIO.setTargetVelocity(kShootingVelocityRadsPerSec);
+        transferIO.setTargetVelocity(targetVelocityRadsPerSec);
         break;
       default:
         transferIO.stop();
@@ -69,12 +70,29 @@ public class Transfer extends SubsystemBase {
   /** Set mode to staging (slow velocity; stop when colour sensor tripped). */
   public void setStagingMode() {
     mode = Mode.STAGING;
+    targetVelocityRadsPerSec = kStagingVelocityRadsPerSec;
   }
 
   /** Set mode to shooting (high velocity); clears ballStaged. */
   public void setShootingMode() {
     mode = Mode.SHOOTING;
     ballStaged = false;
+    targetVelocityRadsPerSec = kShootingVelocityRadsPerSec;
+  }
+
+  /** Set the target velocity (rad/s) */
+  public void setTargetVelocityRadsPerSec(double radsPerSec) {
+    targetVelocityRadsPerSec = radsPerSec;
+  }
+
+  /** Get the current target velocity (rad/s). */
+  public double getTargetVelocityRadsPerSec() {
+    return mode == Mode.IDLE ? 0.0 : targetVelocityRadsPerSec;
+  }
+
+  /** Get the current target velocity (RPM). */
+  public double getTargetVelocityRpm() {
+    return Units.radiansPerSecondToRotationsPerMinute(getTargetVelocityRadsPerSec());
   }
 
   /** Set mode to idle (motor stopped). */

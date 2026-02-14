@@ -21,6 +21,7 @@ public class Agitator extends SubsystemBase {
   private final AgitatorIO.AgitatorIOInputs agitatorInputs = new AgitatorIO.AgitatorIOInputs();
 
   private Mode mode = Mode.IDLE;
+  private double targetVelocityRadsPerSec = kStagingVelocityRadsPerSec;
 
   public Agitator(AgitatorIO io) {
     agitatorIO = io;
@@ -46,10 +47,10 @@ public class Agitator extends SubsystemBase {
         agitatorIO.stop();
         break;
       case STAGING:
-        agitatorIO.setTargetVelocity(kStagingVelocityRadsPerSec);
+        agitatorIO.setTargetVelocity(targetVelocityRadsPerSec);
         break;
       case SHOOTING:
-        agitatorIO.setTargetVelocity(kShootingVelocityRadsPerSec);
+        agitatorIO.setTargetVelocity(targetVelocityRadsPerSec);
         break;
       default:
         agitatorIO.stop();
@@ -65,12 +66,29 @@ public class Agitator extends SubsystemBase {
   /** Set mode to staging (slow velocity). Transitions to IDLE when Transfer goes idle. */
   public void setStagingMode() {
     mode = Mode.STAGING;
+    targetVelocityRadsPerSec = kStagingVelocityRadsPerSec;
   } // End setStagingMode
 
   /** Set mode to shooting (high velocity). */
   public void setShootingMode() {
     mode = Mode.SHOOTING;
+    targetVelocityRadsPerSec = kShootingVelocityRadsPerSec;
   } // End setShootingMode
+
+  /** Set the target velocity (rad/s) used when in STAGING or SHOOTING. */
+  public void setTargetVelocityRadsPerSec(double radsPerSec) {
+    targetVelocityRadsPerSec = radsPerSec;
+  } // End setTargetVelocityRadsPerSec
+
+  /** Get the current target velocity (rad/s). */
+  public double getTargetVelocityRadsPerSec() {
+    return mode == Mode.IDLE ? 0.0 : targetVelocityRadsPerSec;
+  } // End getTargetVelocityRadsPerSec
+
+  /** Get the current target velocity (RPM). */
+  public double getTargetVelocityRpm() {
+    return Units.radiansPerSecondToRotationsPerMinute(getTargetVelocityRadsPerSec());
+  } // End getTargetVelocityRpm
 
   /** Current mode. */
   public Mode getMode() {
