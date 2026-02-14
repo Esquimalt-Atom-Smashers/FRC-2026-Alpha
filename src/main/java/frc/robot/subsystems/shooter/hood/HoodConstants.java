@@ -8,7 +8,7 @@ public final class HoodConstants { // TODO: Add correct Values
   private HoodConstants() {}
 
   /** CAN ID of the hood motor (NEO 550 on SPARK MAX). */
-  public static final int kMotorId = 7; // TODO: Add correct ID
+  public static final int kMotorId = 7;
 
   /** Motor shaft rotations per hood rotation (output / input). */
   public static final double kGearRatio = 1.0;

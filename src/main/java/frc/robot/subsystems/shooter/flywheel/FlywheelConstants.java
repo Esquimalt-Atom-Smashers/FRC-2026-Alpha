@@ -3,12 +3,12 @@ package frc.robot.subsystems.shooter.flywheel;
 import edu.wpi.first.math.util.Units;
 
 /** Constants for the flywheel subsystem. */
-public final class FlywheelConstants {
+public final class FlywheelConstants { // TODO: Add correct values
 
   private FlywheelConstants() {}
 
   /** CAN ID of the flywheel motor. */
-  public static final int kMotorId = 6; // TODO: Add correct ID
+  public static final int kMotorId = 6;
 
   /** Flywheel radius (m) for converting angular velocity to launch linear velocity. ~2 in. */
   public static final double kFlywheelRadiusMeters = 0.0508;
@@ -20,7 +20,7 @@ public final class FlywheelConstants {
   public static final double kMaxVoltage = 12.0;
 
   /** Stator current limit (amps); protects motor and gearbox. */
-  public static final double kStatorCurrentLimitAmps = 40.0; // TODO: Tune for your motor
+  public static final double kStatorCurrentLimitAmps = 40.0;
 
   /** Set true if positive velocity spins the flywheel the opposite direction. */
   public static final boolean kMotorInverted = false;
@@ -29,7 +29,7 @@ public final class FlywheelConstants {
   public static final double kIdleVelocityRadsPerSec = 0.0;
 
   /** Target velocity (rad/s) for shooting. */
-  public static final double kDefaultTargetVelocityRadsPerSec = Units.rotationsPerMinuteToRadiansPerSecond(3000.0); // TODO: Add correct value
+  public static final double kDefaultTargetVelocityRadsPerSec = Units.rotationsPerMinuteToRadiansPerSecond(4000.0);
 
   /** Tolerance for at-target velocity (Charging → AtSpeed). */
   public static final double kAtTargetVelocityToleranceRadsPerSec = Units.rotationsPerMinuteToRadiansPerSecond(50.0);
