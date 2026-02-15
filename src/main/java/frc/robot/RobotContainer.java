@@ -32,51 +32,19 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.drive.GyroIO;
-import frc.robot.subsystems.drive.GyroIOPigeon2;
-import frc.robot.subsystems.drive.GyroIOSim;
-import frc.robot.subsystems.drive.ModuleIO;
-import frc.robot.subsystems.drive.ModuleIOSim;
-import frc.robot.subsystems.drive.ModuleIOTalonFX;
-import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.IntakeConstants;
-import frc.robot.subsystems.intake.IntakeIO;
-import frc.robot.subsystems.intake.IntakeIOSim;
-import frc.robot.subsystems.intake.IntakeIOSparkMax;
-import frc.robot.subsystems.agitator.Agitator;
-import frc.robot.subsystems.agitator.AgitatorConstants;
-import frc.robot.subsystems.agitator.AgitatorIO;
-import frc.robot.subsystems.agitator.AgitatorIOSim;
-import frc.robot.subsystems.agitator.AgitatorIOSparkMax;
+import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.intake.*;
+import frc.robot.subsystems.agitator.*;
 import frc.robot.commands.ShootWhenReadyCommand;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterSim;
 import frc.robot.subsystems.shooter.ShooterSimVisualizer;
-import frc.robot.subsystems.shooter.transfer.Transfer;
-import frc.robot.subsystems.shooter.transfer.TransferConstants;
-import frc.robot.subsystems.shooter.transfer.TransferIO;
-import frc.robot.subsystems.shooter.transfer.TransferIOBrushedSparkMax;
-import frc.robot.subsystems.shooter.transfer.TransferIOSim;
-import frc.robot.subsystems.shooter.turret.Turret;
-import frc.robot.subsystems.shooter.turret.TurretIO;
-import frc.robot.subsystems.shooter.turret.TurretIOSim;
-import frc.robot.subsystems.shooter.turret.TurretIOSparkMax;
-import frc.robot.subsystems.shooter.hood.Hood;
-import frc.robot.subsystems.shooter.hood.HoodConstants;
-import frc.robot.subsystems.shooter.hood.HoodIO;
-import frc.robot.subsystems.shooter.hood.HoodIOSim;
-import frc.robot.subsystems.shooter.hood.HoodIOSparkMax;
-import frc.robot.subsystems.shooter.flywheel.Flywheel;
+import frc.robot.subsystems.shooter.transfer.*;
+import frc.robot.subsystems.shooter.turret.*;
+import frc.robot.subsystems.shooter.hood.*;
+import frc.robot.subsystems.shooter.flywheel.*;
 import frc.robot.subsystems.shooter.flywheel.Flywheel.FlywheelState;
-import frc.robot.subsystems.shooter.flywheel.FlywheelConstants;
-import frc.robot.subsystems.shooter.flywheel.FlywheelIO;
-import frc.robot.subsystems.shooter.flywheel.FlywheelIOSim;
-import frc.robot.subsystems.shooter.flywheel.FlywheelIOTalonFX;
-import frc.robot.subsystems.vision.Vision;
-import frc.robot.subsystems.vision.VisionIO;
-import frc.robot.subsystems.vision.VisionIOPhotonVision;
-import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
+import frc.robot.subsystems.vision.*;
 import frc.robot.simulation.FuelSim;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -104,6 +72,8 @@ public class RobotContainer {
 	private boolean isTurretEnabled = true;
 	private boolean isHoodEnabled = false;
 	private boolean isFlywheelEnabled = true;
+
+	//region 
 
 	// Subsystems
 	private final Drive drive;
@@ -136,16 +106,16 @@ public class RobotContainer {
 	// Dashboard inputs
 	private final LoggedDashboardChooser<Command> autoChooser;
 
-  // Manual Override
-  public static boolean manualOverride = true; // TODO: Implement manual override properly, and change back to false
+	// Manual Override
+	public static boolean manualOverride = true; // TODO: Implement manual override properly, and change back to false
 
-  // Face Target mode
-  private boolean isFacingHub = false;
-  private ProfiledPIDController faceTargetController;
+	// Face Target mode
+	private boolean isFacingHub = false;
+	private ProfiledPIDController faceTargetController;
 
-  // Robot-centric vs field-centric drive
-  private boolean isRobotCentric = false;
-
+	// Robot-centric vs field-centric drive
+	private boolean isRobotCentric = false;
+	//end region
 
 	/** The container for the robot. Contains subsystems, OI devices, and commands. */
 	public RobotContainer() {
