@@ -36,6 +36,7 @@ import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeConstants;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
@@ -502,7 +503,42 @@ public class RobotContainer {
 				if (flywheel != null) flywheel.setState(FlywheelState.IDLE);
 			}, agitator, transfer, flywheel));
 
-			// Manual Override for Agitator Voltage (Y = +0.5 V, A = -0.5 V; from IDLE, Y enters STAGING so motor runs)
+			// Manual Override for Intake Voltage
+			if (manualOverride && intake != null) {
+				final double stepVoltage = 0.25; // TODO: Set step voltage
+				operatorController.povLeft().onTrue(
+						Commands.runOnce(
+								() -> {
+									double next = Math.min(IntakeConstants.kMaxVoltage, intake.getTargetVoltage() + stepVoltage);
+									if (intake.getMode() == Intake.Mode.IDLE) {
+										intake.setIntakingMode();
+										intake.setTargetVoltage(stepVoltage);
+									} else {
+										intake.setTargetVoltage(next);
+									}
+									if (next == 0) {
+										intake.setIdleMode();
+									}
+								},
+								intake));
+				operatorController.povRight().onTrue(
+						Commands.runOnce(
+								() -> {
+									double next = Math.max(-IntakeConstants.kMaxVoltage, intake.getTargetVoltage() - stepVoltage);
+									if (intake.getMode() == Intake.Mode.IDLE) {
+										intake.setReversingMode();
+										intake.setTargetVoltage(-stepVoltage);
+									} else {
+										intake.setTargetVoltage(next);
+									}
+									if (next == 0) {
+										intake.setIdleMode();
+									}
+								},
+								intake));
+			}
+
+			// Manual Override for Agitator Voltage
 			if (manualOverride && agitator != null) {
 				final double stepVoltage = 0.25; // TODO: Set step voltage
 				operatorController.y().onTrue(
@@ -537,7 +573,7 @@ public class RobotContainer {
 								agitator));
 			}
 
-			// Manual Override for Transfer Voltage (left = +0.5 V, right = -0.5 V; from IDLE, left enters STAGING)
+			// Manual Override for Transfer Voltage
 			if (manualOverride && transfer != null) {
 				final double stepVoltage = 0.25; // TODO: Set step voltage
 				operatorController.leftBumper().onTrue(

@@ -23,7 +23,7 @@ public class VisionConstants {
 
   // Robot to camera transforms (index by camera index; add more entries when adding cameras)
   public static Transform3d robotToCamera0 =
-      new Transform3d(0.228, 0.0, 0.2, new Rotation3d(0.0, Math.toRadians(-21.5), 0.0));
+      new Transform3d(-0.08255, 0.2413, 0.40005, new Rotation3d(0.0, Math.toRadians(-7.0), Math.toRadians(4.0)));
   public static Transform3d robotToCamera1 =
       new Transform3d(0.0, 10.0, 0.1524, new Rotation3d(0.0, 0.0, 0.0));
 
