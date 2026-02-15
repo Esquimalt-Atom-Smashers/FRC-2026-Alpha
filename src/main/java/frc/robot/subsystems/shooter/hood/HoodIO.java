@@ -2,7 +2,7 @@ package frc.robot.subsystems.shooter.hood;
 
 import org.littletonrobotics.junction.AutoLog;
 
-/** IO interface for the hood (one motor + encoder). */
+/** IO interface for the Hood (one motor, position controlled). */
 public interface HoodIO {
 
   @AutoLog
@@ -17,12 +17,9 @@ public interface HoodIO {
   /** Update inputs from the hardware. */
   default void updateInputs(HoodIOInputs inputs) {}
 
-  /**
-   * Set the target position (radians, encoder frame).
-   * Controller runs PID on-device at higher rate than robot loop.
-   */
+  /** Set the target position. */
   default void setTargetPosition(double targetRads) {}
 
-  /** Stop the hood (no power). */
+  /** Stop the motor (brake). */
   default void stop() {}
 }

@@ -8,12 +8,11 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.StatusCode;
 import edu.wpi.first.math.util.Units;
 import frc.robot.generated.TunerConstants;
 
-/** Hood IO using a single Talon FX with onboard position control. */
+/** Hood IO using Talon FX with onboard position control. */
 public class HoodIOTalonFX implements HoodIO {
 
   private final TalonFX motor;
@@ -23,7 +22,9 @@ public class HoodIOTalonFX implements HoodIO {
     motor = new TalonFX(kMotorId, TunerConstants.kCANBus);
 
     var talonFxConfig = new TalonFXConfiguration();
-    talonFxConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    talonFxConfig.MotorOutput.NeutralMode = kNeutralMode;
+    talonFxConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+    talonFxConfig.CurrentLimits.StatorCurrentLimit = kStatorCurrentLimitAmps;
     talonFxConfig.Slot0.kP = kP;
     talonFxConfig.Slot0.kI = kI;
     talonFxConfig.Slot0.kD = kD;

@@ -11,7 +11,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
-/** Hood IO for simulation; uses software PID (no onboard controller in sim). */
+/** Hood IO for simulation; NEO 550 with software position control. */
 public class HoodIOSim implements HoodIO {
 
   private static final double kLoopPeriodSecs = 0.02;
@@ -53,7 +53,7 @@ public class HoodIOSim implements HoodIO {
               - kD * velocityRotationsPerSec;
       appliedVolts = MathUtil.clamp(pidOutputVolts, -kMaxVoltage, kMaxVoltage);
 
-      motorSim.setInputVoltage(MathUtil.clamp(appliedVolts, -12.0, 12.0));
+      motorSim.setInputVoltage(MathUtil.clamp(appliedVolts, -kMaxVoltage, kMaxVoltage));
     }
     motorSim.update(kLoopPeriodSecs);
 

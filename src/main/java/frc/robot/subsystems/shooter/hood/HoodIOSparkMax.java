@@ -10,7 +10,6 @@ import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.util.Units;
 
@@ -27,7 +26,8 @@ public class HoodIOSparkMax implements HoodIO {
     encoder = motor.getEncoder();
 
     var sparkMaxConfig = new SparkMaxConfig();
-    sparkMaxConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
+    sparkMaxConfig.idleMode(kIdleMode);
+    sparkMaxConfig.smartCurrentLimit(kSmartCurrentLimitAmps);
     sparkMaxConfig
         .encoder
         .positionConversionFactor(1.0 / kGearRatio)

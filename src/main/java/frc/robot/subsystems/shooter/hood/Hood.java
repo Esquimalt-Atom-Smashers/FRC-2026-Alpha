@@ -7,13 +7,13 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
-/** Hood subsystem: position-controlled mechanism that sets shooter angle (radians). */
+/** Hood subsystem: position-controlled mechanism that sets shooter angle. */
 public class Hood extends SubsystemBase {
 
   private final HoodIO hoodIO;
   private final HoodIO.HoodIOInputs hoodInputs = new HoodIO.HoodIOInputs();
 
-  private double targetAngleRad = 0.0;
+  private double targetAngleRad = kMinAngleRad;
 
   public Hood(HoodIO io) {
     hoodIO = io;
@@ -23,39 +23,40 @@ public class Hood extends SubsystemBase {
   public void periodic() {
     hoodIO.updateInputs(hoodInputs);
     Logger.recordOutput("Hood/Inputs/MotorConnected", hoodInputs.motorConnected);
+    Logger.recordOutput("Hood/TargetDegrees", targetAngleRad * 180.0 / Math.PI);
+    Logger.recordOutput("Hood/PositionDegrees", getAngleRad() * 180.0 / Math.PI);
     Logger.recordOutput("Hood/Inputs/PositionRads", hoodInputs.positionRads);
     Logger.recordOutput("Hood/Inputs/VelocityRadsPerSec", hoodInputs.velocityRadsPerSec);
     Logger.recordOutput("Hood/Inputs/AppliedVolts", hoodInputs.appliedVolts);
     Logger.recordOutput("Hood/Inputs/SupplyCurrentAmps", hoodInputs.supplyCurrentAmps);
-    Logger.recordOutput("Hood/PositionDegrees", getAngleRad() * 180.0 / Math.PI);
-    Logger.recordOutput("Hood/TargetDegrees", targetAngleRad * 180.0 / Math.PI);
 
     if (DriverStation.isDisabled()) {
       hoodIO.stop();
       return;
     }
 
+    // Set the Hood target position from clamped angle
     double clampedRad = MathUtil.clamp(targetAngleRad, kMinAngleRad, kMaxAngleRad);
     double targetPositionRad = clampedRad + kEncoderZeroOffsetRad;
     hoodIO.setTargetPosition(targetPositionRad);
   } // End periodic
 
-  /** Set the target angle (radians). Clamped to min/max in periodic. */
+  /** Set the target angle. Clamped to min/max in periodic. */
   public void setTargetAngleRad(double angleRad) {
     targetAngleRad = angleRad;
   } // End setTargetAngleRad
 
-  /** Get the current target angle (radians). */
+  /** Get the current target angle. */
   public double getTargetAngleRad() {
     return targetAngleRad;
   } // End getTargetAngleRad
 
-  /** Get the current hood angle (radians). */
+  /** Get the current Hood angle. */
   public double getAngleRad() {
     return hoodInputs.positionRads + kEncoderZeroOffsetRad;
   } // End getAngleRad
 
-  /** Whether the hood is at the target angle within tolerance. */
+  /** Whether the Hood is at the target angle within tolerance. */
   public boolean atTarget() {
     double currentRad = hoodInputs.positionRads + kEncoderZeroOffsetRad;
     double targetClamped = MathUtil.clamp(targetAngleRad, kMinAngleRad, kMaxAngleRad);
