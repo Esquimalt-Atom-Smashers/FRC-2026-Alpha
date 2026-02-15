@@ -29,13 +29,62 @@ public final class ShooterCommands {
 
   private ShooterCommands() {}
 
-  /**
-   * Alliance hub center (top of Funnel) in 3D (meters) for current alliance.
-   */
+  /** Which passing spot is selected; null = aim at hub. */
+  private static volatile PassingSpot passingSpotOverride = null;
+
+  public enum PassingSpot {
+    LEFT,
+    CENTER,
+    RIGHT
+  }
+
+  /** Set target to passing spot left (alliance-relative). */
+  public static void setPassingSpotLeft() {
+    passingSpotOverride = PassingSpot.LEFT;
+  }
+
+  /** Set target to passing spot center (alliance-relative). */
+  public static void setPassingSpotCenter() {
+    passingSpotOverride = PassingSpot.CENTER;
+  }
+
+  /** Set target to passing spot right (alliance-relative). */
+  public static void setPassingSpotRight() {
+    passingSpotOverride = PassingSpot.RIGHT;
+  }
+
+  /** Clear override so shooter returns to hub. */
+  public static void clearShooterTargetOverride() {
+    passingSpotOverride = null;
+  }
+
+  private static Translation3d getPassingSpot3d(PassingSpot spot) {
+    boolean red = AllianceUtil.isRedAlliance();
+    return switch (spot) {
+      case LEFT -> red ? FieldConstants.RED_PASSING_SPOT_LEFT : FieldConstants.BLUE_PASSING_SPOT_LEFT;
+      case CENTER -> red ? FieldConstants.RED_PASSING_SPOT_CENTER : FieldConstants.BLUE_PASSING_SPOT_CENTER;
+      case RIGHT -> red ? FieldConstants.RED_PASSING_SPOT_RIGHT : FieldConstants.BLUE_PASSING_SPOT_RIGHT;
+    };
+  }
+
+  /** Current shooter target: passing spot or alliance hub (funnel top). */
   public static Translation3d getShooterTarget3d() {
+    PassingSpot spot = passingSpotOverride;
+    if (spot != null) return getPassingSpot3d(spot);
     return AllianceUtil.isRedAlliance()
         ? FieldConstants.RED_FUNNEL_TOP_CENTER_3D
         : FieldConstants.BLUE_FUNNEL_TOP_CENTER_3D;
+  }
+
+  /** Get current target for logging. */
+  public static String getShooterTargetName() {
+    PassingSpot spot = passingSpotOverride;
+    if (spot == null) return "Hub";
+    return switch (spot) {
+      case LEFT -> "Passing Left";
+      case CENTER -> "Passing Center";
+      case RIGHT -> "Passing Right";
+    };
   }
 
   /**

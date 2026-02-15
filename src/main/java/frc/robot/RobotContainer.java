@@ -462,6 +462,12 @@ public class RobotContainer {
 			}
 		}));
 
+    // POV up = back to hub; Pass to our side: POV left/right = passing spot; POV down = center
+		driverController.povUp().onTrue(Commands.runOnce(ShooterCommands::clearShooterTargetOverride));
+    driverController.povLeft().onTrue(Commands.runOnce(ShooterCommands::setPassingSpotLeft));
+    driverController.povRight().onTrue(Commands.runOnce(ShooterCommands::setPassingSpotRight));
+    driverController.povDown().onTrue(Commands.runOnce(ShooterCommands::setPassingSpotCenter));
+
     // Flywheel: Toggles Idle ↔ Charging/AtSpeed (Charging auto-transitions to AtSpeed when at target)
     if (flywheel != null) {
       driverController.leftBumper().onTrue(

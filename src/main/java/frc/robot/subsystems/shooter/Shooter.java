@@ -51,6 +51,7 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
+    Logger.recordOutput("ShooterCommand/Target", ShooterCommands.getShooterTargetName());
     ShooterCommands.setShooterTarget(drive, hood, flywheel, hoodEnabled);
     Logger.recordOutput("ShooterCommand/ShootWhenReadyCommandActive", shootCommandScheduledSupplier.getAsBoolean());
     Logger.recordOutput("ShooterCommand/Ready/IsReadyToShoot", isReadyToShoot());

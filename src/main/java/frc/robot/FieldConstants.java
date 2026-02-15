@@ -43,14 +43,32 @@ public final class FieldConstants {
   /** Alliance zone depth. */
   public static final double ALLIANCE_ZONE_M = 3.977927;
 
-  /** Passing spot left (90 in from driver wall, 85 in left of field center). */
-  public static final Translation3d PASSING_SPOT_LEFT = new Translation3d(2.286, 6.180328, 0);
+  /** Field length (m) for mirroring red alliance positions. */
+  public static final double FIELD_LENGTH_M = 16.54105;
 
-  /** Passing spot center (90 in from driver wall, field center y). */
-  public static final Translation3d PASSING_SPOT_CENTER = new Translation3d(2.286, 4.021328, 0);
+  /** Field center Y (m). */
+  public static final double FIELD_CENTER_Y_M = 4.021328;
 
-  /** Passing spot right (90 in from driver wall, 85 in right of field center). */
-  public static final Translation3d PASSING_SPOT_RIGHT = new Translation3d(2.286, 1.862328, 0);
+  /** Passing spot left (90 in from blue driver wall, 85 in left of field center). */
+  public static final Translation3d BLUE_PASSING_SPOT_LEFT = new Translation3d(2.286, 6.180328, 0);
+
+  /** Passing spot center (90 in from blue driver wall, field center y). */
+  public static final Translation3d BLUE_PASSING_SPOT_CENTER = new Translation3d(2.286, 4.021328, 0);
+
+  /** Passing spot right (90 in from blue driver wall, 85 in right of field center). */
+  public static final Translation3d BLUE_PASSING_SPOT_RIGHT = new Translation3d(2.286, 1.862328, 0);
+
+  /** Passing spot left (90 in from red driver wall; y mirrored so driver left is correct side). */
+  public static final Translation3d RED_PASSING_SPOT_LEFT =
+      new Translation3d(FIELD_LENGTH_M - 2.286, 2 * FIELD_CENTER_Y_M - 6.180328, 0);
+
+  /** Passing spot center (90 in from red driver wall). */
+  public static final Translation3d RED_PASSING_SPOT_CENTER =
+      new Translation3d(FIELD_LENGTH_M - 2.286, FIELD_CENTER_Y_M, 0);
+
+  /** Passing spot right (90 in from red driver wall; y mirrored). */
+  public static final Translation3d RED_PASSING_SPOT_RIGHT =
+      new Translation3d(FIELD_LENGTH_M - 2.286, 2 * FIELD_CENTER_Y_M - 1.862328, 0);
 
   private FieldConstants() {
     throw new UnsupportedOperationException("This is a utility class!");
