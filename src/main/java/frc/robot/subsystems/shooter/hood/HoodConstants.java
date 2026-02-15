@@ -36,10 +36,10 @@ public final class HoodConstants { // TODO: Add correct values
   public static final double kEncoderZeroOffsetRad = 0.0;
 
   /** Minimum Hood angle. */
-  public static final double kMinAngleRad = Units.degreesToRadians(50.0);
+  public static final double kMinAngleRad = Units.degreesToRadians(40.0);
 
   /** Maximum Hood angle. */
-  public static final double kMaxAngleRad = Units.degreesToRadians(80.0);
+  public static final double kMaxAngleRad = Units.degreesToRadians(10.0);
 
   /** Max voltage magnitude applied to the motor. */
   public static final double kMaxVoltage = 12.0;
