@@ -307,8 +307,8 @@ public class RobotContainer {
 
 
 		// Record zeroed robot components (model_0 turret, model_1 extender) – initial only; updated in updateSimulation()
-		Logger.recordOutput("ZeroedRobotComponents", new Pose3d[] {new Pose3d(), new Pose3d()});
-		Logger.recordOutput("FinalComponentPoses",
+		Logger.recordOutput("ComponentPoses/Zeroed", new Pose3d[] {new Pose3d(), new Pose3d()});
+		Logger.recordOutput("ComponentPoses/Final",
 				new Pose3d[] {
 					new Pose3d(-0.17, 0.05, 0.35, new Rotation3d(0, 0, 0)), // model_0 turret
 					new Pose3d(0.5, 0, 0.35, new Rotation3d(0, 0, 0))  // model_1 extender
@@ -650,7 +650,7 @@ public class RobotContainer {
 		// Robot-relative component poses for visualization
 		Pose3d turretComponentPose = new Pose3d(-0.17, 0.05, 0.35, new Rotation3d(0, 0, turret.getPosition().getRadians() - Math.PI / 2.0));
 		Pose3d extenderComponentPose = new Pose3d(0.5, 0, 0.35, new Rotation3d(0, 0, 0));
-		Logger.recordOutput("FinalComponentPoses", new Pose3d[] {turretComponentPose, extenderComponentPose});
+		Logger.recordOutput("ComponentPoses/Final", new Pose3d[] {turretComponentPose, extenderComponentPose});
 
 		// Update field view
 		field.setRobotPose(robotPose);

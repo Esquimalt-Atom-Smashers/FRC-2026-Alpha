@@ -58,17 +58,17 @@ public class ShooterSimVisualizer {
             trajectory[i] = new Translation3d(x, y, z);
         }
 
-        Logger.recordOutput("Turret/Trajectory", trajectory);
+        Logger.recordOutput("ShooterVisualizer/Trajectory", trajectory);
     }
 
     public void update3dPose(Angle azimuthAngle, Angle hoodAngle) {
         Pose3d turretPose = new Pose3d(0, 0, 0, new Rotation3d(0, 0, azimuthAngle.in(Radians)));
-        Logger.recordOutput("Turret/TurretPose", turretPose);
+        Logger.recordOutput("ShooterVisualizer/TurretPose", turretPose);
         Pose3d hoodPose = new Pose3d(0.1, 0, 0, new Rotation3d(0, hoodAngle.in(Radians), 0));
         hoodPose = hoodPose.rotateAround(new Translation3d(), new Rotation3d(0, 0, azimuthAngle.in(Radians)));
         hoodPose = new Pose3d(
                 hoodPose.getTranslation().plus(ShooterConstants.robotToTurret.getTranslation()),
                 hoodPose.getRotation());
-        Logger.recordOutput("Turret/HoodPose", hoodPose);
+        Logger.recordOutput("ShooterVisualizer/HoodPose", hoodPose);
     }
 }

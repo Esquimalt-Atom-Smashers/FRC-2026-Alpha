@@ -22,13 +22,13 @@ public class Hood extends SubsystemBase {
   @Override
   public void periodic() {
     hoodIO.updateInputs(hoodInputs);
-    Logger.recordOutput("Hood/Inputs/MotorConnected", hoodInputs.motorConnected);
-    Logger.recordOutput("Hood/TargetDegrees", targetAngleRad * 180.0 / Math.PI);
-    Logger.recordOutput("Hood/PositionDegrees", getAngleRad() * 180.0 / Math.PI);
-    Logger.recordOutput("Hood/Inputs/PositionRads", hoodInputs.positionRads);
-    Logger.recordOutput("Hood/Inputs/VelocityRadsPerSec", hoodInputs.velocityRadsPerSec);
-    Logger.recordOutput("Hood/Inputs/AppliedVolts", hoodInputs.appliedVolts);
-    Logger.recordOutput("Hood/Inputs/SupplyCurrentAmps", hoodInputs.supplyCurrentAmps);
+    Logger.recordOutput("Subsystems/Shooter/Hood/Inputs/MotorConnected", hoodInputs.motorConnected);
+    Logger.recordOutput("Subsystems/Shooter/Hood/TargetDegrees", targetAngleRad * 180.0 / Math.PI);
+    Logger.recordOutput("Subsystems/Shooter/Hood/PositionDegrees", getAngleRad() * 180.0 / Math.PI);
+    Logger.recordOutput("Subsystems/Shooter/Hood/Inputs/PositionRads", hoodInputs.positionRads);
+    Logger.recordOutput("Subsystems/Shooter/Hood/Inputs/VelocityRadsPerSec", hoodInputs.velocityRadsPerSec);
+    Logger.recordOutput("Subsystems/Shooter/Hood/Inputs/AppliedVolts", hoodInputs.appliedVolts);
+    Logger.recordOutput("Subsystems/Shooter/Hood/Inputs/SupplyCurrentAmps", hoodInputs.supplyCurrentAmps);
 
     if (DriverStation.isDisabled()) {
       hoodIO.stop();

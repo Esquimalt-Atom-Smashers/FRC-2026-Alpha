@@ -31,13 +31,13 @@ public class Transfer extends SubsystemBase {
   @Override
   public void periodic() {
     transferIO.updateInputs(transferInputs);
-    Logger.recordOutput("Transfer/Inputs/MotorConnected", transferInputs.motorConnected);
-    Logger.recordOutput("Transfer/Inputs/TargetVolts", getTargetVoltage());
-    Logger.recordOutput("Transfer/Inputs/AppliedVolts", transferInputs.appliedVolts);
-    Logger.recordOutput("Transfer/Inputs/SupplyCurrentAmps", transferInputs.supplyCurrentAmps);
-    Logger.recordOutput("Transfer/Inputs/ColorSensorTripped", transferInputs.colorSensorTripped);
-    Logger.recordOutput("Transfer/Mode", mode.name());
-    Logger.recordOutput("Transfer/BallStaged", ballStaged);
+    Logger.recordOutput("Subsystems/Shooter/Transfer/Inputs/MotorConnected", transferInputs.motorConnected);
+    Logger.recordOutput("Subsystems/Shooter/Transfer/Inputs/TargetVolts", getTargetVoltage());
+    Logger.recordOutput("Subsystems/Shooter/Transfer/Inputs/AppliedVolts", transferInputs.appliedVolts);
+    Logger.recordOutput("Subsystems/Shooter/Transfer/Inputs/SupplyCurrentAmps", transferInputs.supplyCurrentAmps);
+    Logger.recordOutput("Subsystems/Shooter/Transfer/Inputs/ColorSensorTripped", transferInputs.colorSensorTripped);
+    Logger.recordOutput("Subsystems/Shooter/Transfer/Mode", mode.name());
+    Logger.recordOutput("Subsystems/Shooter/Transfer/BallStaged", ballStaged);
 
     if (DriverStation.isDisabled()) {
       transferIO.stop();

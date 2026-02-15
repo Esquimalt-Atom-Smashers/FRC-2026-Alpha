@@ -29,11 +29,11 @@ public class Intake extends SubsystemBase {
   @Override
   public void periodic() {
     intakeIO.updateInputs(intakeInputs);
-    Logger.recordOutput("Intake/Inputs/MotorConnected", intakeInputs.motorConnected);
-    Logger.recordOutput("Intake/Inputs/TargetVolts", getTargetVoltage());
-    Logger.recordOutput("Intake/Inputs/AppliedVolts", intakeInputs.appliedVolts);
-    Logger.recordOutput("Intake/Inputs/SupplyCurrentAmps", intakeInputs.supplyCurrentAmps);
-    Logger.recordOutput("Intake/Mode", mode.name());
+    Logger.recordOutput("Subsystems/Intake/Inputs/MotorConnected", intakeInputs.motorConnected);
+    Logger.recordOutput("Subsystems/Intake/Inputs/TargetVolts", getTargetVoltage());
+    Logger.recordOutput("Subsystems/Intake/Inputs/AppliedVolts", intakeInputs.appliedVolts);
+    Logger.recordOutput("Subsystems/Intake/Inputs/SupplyCurrentAmps", intakeInputs.supplyCurrentAmps);
+    Logger.recordOutput("Subsystems/Intake/Mode", mode.name());
 
     if (DriverStation.isDisabled()) {
       intakeIO.stop();

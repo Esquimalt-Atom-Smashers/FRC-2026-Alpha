@@ -26,14 +26,14 @@ public class Turret extends SubsystemBase {
   public void periodic() {
     turretIO.updateInputs(turretInputs);
     double targetPositionRad = DriverStation.isDisabled() ? 0.0 : getClampedHubAngleRad() - kEncoderZeroOffsetRad;
-    Logger.recordOutput("Turret/Inputs/MotorConnected", turretInputs.motorConnected);
-    Logger.recordOutput("Turret/Inputs/TargetPositionRads", targetPositionRad);
-    Logger.recordOutput("Turret/Inputs/PositionRads", turretInputs.positionRads);
-    Logger.recordOutput("Turret/PositionDegrees", getPosition().getDegrees());
-    Logger.recordOutput("Turret/HubDegrees", getHubAngleRelativeToRobot().getDegrees());
-    Logger.recordOutput("Turret/Inputs/VelocityRadsPerSec", turretInputs.velocityRadsPerSec);
-    Logger.recordOutput("Turret/Inputs/AppliedVolts", turretInputs.appliedVolts);
-    Logger.recordOutput("Turret/Inputs/SupplyCurrentAmps", turretInputs.supplyCurrentAmps);
+    Logger.recordOutput("Subsystems/Shooter/Turret/Inputs/MotorConnected", turretInputs.motorConnected);
+    Logger.recordOutput("Subsystems/Shooter/Turret/Inputs/TargetPositionRads", targetPositionRad);
+    Logger.recordOutput("Subsystems/Shooter/Turret/Inputs/PositionRads", turretInputs.positionRads);
+    Logger.recordOutput("Subsystems/Shooter/Turret/PositionDegrees", getPosition().getDegrees());
+    Logger.recordOutput("Subsystems/Shooter/Turret/HubDegrees", getHubAngleRelativeToRobot().getDegrees());
+    Logger.recordOutput("Subsystems/Shooter/Turret/Inputs/VelocityRadsPerSec", turretInputs.velocityRadsPerSec);
+    Logger.recordOutput("Subsystems/Shooter/Turret/Inputs/AppliedVolts", turretInputs.appliedVolts);
+    Logger.recordOutput("Subsystems/Shooter/Turret/Inputs/SupplyCurrentAmps", turretInputs.supplyCurrentAmps);
 
     if (DriverStation.isDisabled()) {
       turretIO.setTargetPosition(0.0);

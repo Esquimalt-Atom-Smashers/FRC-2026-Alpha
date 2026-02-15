@@ -29,11 +29,11 @@ public class Agitator extends SubsystemBase {
   @Override
   public void periodic() {
     agitatorIO.updateInputs(agitatorInputs);
-    Logger.recordOutput("Agitator/Inputs/MotorConnected", agitatorInputs.motorConnected);
-    Logger.recordOutput("Agitator/Inputs/TargetVolts", getTargetVoltage());
-    Logger.recordOutput("Agitator/Inputs/AppliedVolts", agitatorInputs.appliedVolts);
-    Logger.recordOutput("Agitator/Inputs/SupplyCurrentAmps", agitatorInputs.supplyCurrentAmps);
-    Logger.recordOutput("Agitator/Mode", mode.name());
+    Logger.recordOutput("Subsystems/Agitator/Inputs/MotorConnected", agitatorInputs.motorConnected);
+    Logger.recordOutput("Subsystems/Agitator/Inputs/TargetVolts", getTargetVoltage());
+    Logger.recordOutput("Subsystems/Agitator/Inputs/AppliedVolts", agitatorInputs.appliedVolts);
+    Logger.recordOutput("Subsystems/Agitator/Inputs/SupplyCurrentAmps", agitatorInputs.supplyCurrentAmps);
+    Logger.recordOutput("Subsystems/Agitator/Mode", mode.name());
 
     if (DriverStation.isDisabled()) {
       agitatorIO.stop();
