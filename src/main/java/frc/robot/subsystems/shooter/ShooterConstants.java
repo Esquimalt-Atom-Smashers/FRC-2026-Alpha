@@ -10,6 +10,7 @@ package frc.robot.subsystems.shooter;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
+import frc.robot.subsystems.shooter.hood.HoodConstants;
 
 /** Constants for the shooter assembly (turret position on robot, camera on turret, etc.). */
 public final class ShooterConstants {
@@ -28,6 +29,17 @@ public final class ShooterConstants {
 
   /** Phase delay (s) to predict pose forward so shot is for when ball leaves. */
   public static final double kPhaseDelaySec = 0.03;
+
+  /** Scale linear velocity: base in/s, multiplier, power for distance term. */
+  public static final double kScaleLinearVelocityBaseInPerS = 50.0;
+  public static final double kScaleLinearVelocityMultiplier = 70.0;
+  public static final double kScaleLinearVelocityPower = 0.3;
+
+  /**
+   * Hood angle (from vertical, rad) when hood is disabled / locked. Steeper (smaller value) raises
+   * the trajectory apex so it clears the funnel; 30° from vertical ≈ 60° elevation from horizontal.
+   */
+  public static final double kFixedHoodAngleWhenDisabledRad = HoodConstants.kMinAngleRad;
 
   /** Transform from turret pivot to camera (when camera is on turret). */
   public static final Transform3d turretToCamera =

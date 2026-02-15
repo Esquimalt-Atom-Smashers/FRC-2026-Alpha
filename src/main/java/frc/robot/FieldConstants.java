@@ -29,6 +29,17 @@ public final class FieldConstants {
   /** Funnel height. */
   public static final double FUNNEL_HEIGHT_M = 0.39624;
 
+  /** Funnel top height above floor. */
+  public static final double FUNNEL_TOP_HEIGHT_M = HUB_CENTER_HEIGHT_M + FUNNEL_HEIGHT_M;
+
+  /** Blue alliance funnel top center in 3D (x, y, z) for shooter ballistics. */
+  public static final Translation3d BLUE_FUNNEL_TOP_CENTER_3D =
+      new Translation3d(BLUE_HUB_CENTER.getX(), BLUE_HUB_CENTER.getY(), FUNNEL_TOP_HEIGHT_M);
+
+  /** Red alliance funnel top center in 3D (x, y, z) for shooter ballistics. */
+  public static final Translation3d RED_FUNNEL_TOP_CENTER_3D =
+      new Translation3d(RED_HUB_CENTER.getX(), RED_HUB_CENTER.getY(), FUNNEL_TOP_HEIGHT_M);
+
   /** Alliance zone depth. */
   public static final double ALLIANCE_ZONE_M = 3.977927;
 

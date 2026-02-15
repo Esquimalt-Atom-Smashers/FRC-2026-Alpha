@@ -60,6 +60,7 @@ import frc.robot.subsystems.shooter.turret.TurretIO;
 import frc.robot.subsystems.shooter.turret.TurretIOSim;
 import frc.robot.subsystems.shooter.turret.TurretIOSparkMax;
 import frc.robot.subsystems.shooter.hood.Hood;
+import frc.robot.subsystems.shooter.hood.HoodConstants;
 import frc.robot.subsystems.shooter.hood.HoodIO;
 import frc.robot.subsystems.shooter.hood.HoodIOSim;
 import frc.robot.subsystems.shooter.hood.HoodIOSparkMax;
@@ -337,7 +338,7 @@ public class RobotContainer {
    */
   private void configureFuelSim() {
     fuelSim.setShowHalfFuel(false);
-		fuelSim.enableAirResistance();
+		// fuelSim.enableAirResistance();
     fuelSim.spawnStartingFuel();
 
     fuelSim.start();
@@ -706,7 +707,7 @@ public class RobotContainer {
 			shooterSim.update(shooter, shootWhenReadyCommand::isScheduled, turret, hood, flywheel);
 		}
 		if (shooterSimVisualizer != null) {
-			double hoodAngleRad = isHoodEnabled ? hood.getAngleRad() : Units.degreesToRadians(40.0);
+			double hoodAngleRad = isHoodEnabled ? hood.getAngleRad() : HoodConstants.kMinAngleRad;
 			shooterSimVisualizer.updateFuel(
 					edu.wpi.first.units.Units.MetersPerSecond.of(
 							flywheel.getTargetVelocityRadsPerSec()

@@ -42,7 +42,7 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
-    ShooterCommands.setShooterTarget(drive, hood, flywheel);
+    ShooterCommands.setShooterTarget(drive, hood, flywheel, hoodEnabled);
   } // End periodic
 
   /** Turret aimed, Flywheel not idle and at speed; (Optional) Hood at target. */
