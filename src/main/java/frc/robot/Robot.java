@@ -9,6 +9,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -86,6 +87,9 @@ public class Robot extends LoggedRobot {
     // the Command-based framework to work.
     CommandScheduler.getInstance().run();
 
+    // Update field view with robot pose (real robot odometry; sim updates in simulationPeriodic)
+    robotContainer.updateFieldPose();
+
     // Return to non-RT thread priority (do not modify the first argument)  // TODO: Could enable if Loop Time is under 1 ms
     // Threads.setCurrentThreadPriority(false, 10);
   }
@@ -94,6 +98,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void disabledInit() {
 		robotContainer.resetSimulationField();
+    robotContainer.makeSystemSafe();
 	}
 
   /** This function is called periodically when disabled. */
@@ -150,5 +155,5 @@ public class Robot extends LoggedRobot {
   @Override
   public void simulationPeriodic() {
     robotContainer.updateSimulation();
-	}
+  }
 }

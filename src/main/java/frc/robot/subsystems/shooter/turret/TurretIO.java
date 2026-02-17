@@ -2,7 +2,7 @@ package frc.robot.subsystems.shooter.turret;
 
 import org.littletonrobotics.junction.AutoLog;
 
-/** IO interface for the turret (one motor + encoder). */
+/** IO interface for the Turret (one motor, position controlled). */
 public interface TurretIO {
 
   @AutoLog
@@ -17,6 +17,9 @@ public interface TurretIO {
   /** Update inputs from the hardware. */
   default void updateInputs(TurretIOInputs inputs) {}
 
-  /** Set motor output voltage (e.g. from PID). */
-  default void setVoltage(double volts) {}
+  /** Set the target position. */
+  default void setTargetPosition(double targetRads) {}
+
+  /** Stop the motor (coast). */
+  default void stop() {}
 }

@@ -22,13 +22,13 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.FieldConstants;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.util.AllianceUtil;
+import org.littletonrobotics.junction.Logger;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
@@ -157,16 +157,6 @@ public class DriveCommands {
   // ----------------------------------------------------------------------------
 
   /**
-   * Checks if the robot is on the red alliance.
-   *
-   * @return true if on red alliance, false otherwise
-   */
-  private static boolean isRedAlliance() {
-    return DriverStation.getAlliance().isPresent()
-        && DriverStation.getAlliance().get() == Alliance.Red;
-  } // End isRedAlliance
-
-  /**
    * Converts robot-relative speeds to field-relative speeds, accounting for alliance color.
    *
    * @param robotRelativeSpeeds Speeds relative to the robot's current orientation
@@ -179,7 +169,7 @@ public class DriveCommands {
     // - When on red alliance, rotate the reference frame by 180° instead of inverting speeds
     // - Robot orientation already accounts for which side it's on (from vision or simulation)
     
-    boolean isFlipped = isRedAlliance();
+    boolean isFlipped = AllianceUtil.isRedAlliance();
     return ChassisSpeeds.fromFieldRelativeSpeeds(
         robotRelativeSpeeds,
         isFlipped
@@ -221,7 +211,7 @@ public class DriveCommands {
 
     // Determine target based on alliance
     Translation2d targetPosition =
-        isRedAlliance() ? FieldConstants.RED_HUB_CENTER : FieldConstants.BLUE_HUB_CENTER;
+        AllianceUtil.isRedAlliance() ? FieldConstants.RED_HUB_CENTER : FieldConstants.BLUE_HUB_CENTER;
 
     // Calculate angle from robot to target
     Translation2d delta = targetPosition.minus(robotPosition);
@@ -229,7 +219,7 @@ public class DriveCommands {
   } // End calculateTargetHubAngle
 
   /**
-   * Calculates the turret goal angle (robot frame) to aim at the alliance hub using robot pose.
+   * Calculates the turret hub angle (robot frame) to aim at the alliance hub using robot pose.
    *
    * @param drive The drive subsystem to get current robot pose from
    * @return Desired turret angle in robot frame (0 = robot forward)
@@ -289,6 +279,7 @@ public class DriveCommands {
    * @param omegaSupplier Supplier for omega (rotation) joystick input (only used when face-target is disabled)
    * @param turboSupplier Supplier for turbo level [0.0, 1.0] (typically right trigger)
    * @param faceTargetEnabledSupplier Supplier indicating if face-target mode is enabled
+   * @param isRobotCentricSupplier Supplier indicating if drive is robot-centric (true) or field-centric (false)
    * @param faceTargetController ProfiledPIDController for face-target rotation control
    * @param usePhysicalMaxSpeed If true, uses the robot's physical maximum speed from the drive subsystem.
    *     If false, uses the artificial MAX_CONTROL_SPEED limit for more controlled driving.
@@ -301,6 +292,7 @@ public class DriveCommands {
       DoubleSupplier omegaSupplier,
       DoubleSupplier turboSupplier,
       BooleanSupplier faceTargetEnabledSupplier,
+      BooleanSupplier isRobotCentricSupplier,
       ProfiledPIDController faceTargetController,
       boolean usePhysicalMaxSpeed) {
     return Commands.run(
@@ -329,7 +321,7 @@ public class DriveCommands {
           double rotationalRate;
           if (faceTargetEnabledSupplier.getAsBoolean()) {
             // Calculate target angle and use PID controller to rotate toward it
-            Rotation2d targetAngle = calculateTargetHubAngle(drive);
+            Rotation2d targetAngle = ShooterCommands.getFieldAngleToHubFromPivot(drive);
             rotationalRate =
                 faceTargetController.calculate(drive.getRotation().getRadians(), targetAngle.getRadians());
           } else {
@@ -346,8 +338,14 @@ public class DriveCommands {
             faceTargetController.reset(drive.getRotation().getRadians());
           }
 
-          // Convert to field-relative speeds and execute
-          driveFieldRelative(drive, velocityX, velocityY, rotationalRate);
+          boolean robotCentric = isRobotCentricSupplier.getAsBoolean();
+          Logger.recordOutput("Drive/CentricMode", robotCentric ? "Robot" : "Field");
+
+          if (robotCentric) {
+            drive.runVelocity(new ChassisSpeeds(velocityX, velocityY, rotationalRate));
+          } else {
+            driveFieldRelative(drive, velocityX, velocityY, rotationalRate);
+          }
         },
         drive);
   } // End joystickDriveWithTurboAndFaceTarget

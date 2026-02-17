@@ -1,0 +1,190 @@
+{
+  "hubs": [
+    {
+      "x": -8,
+      "y": -8,
+      "width": 2576,
+      "height": 1048,
+      "state": {
+        "sidebar": {
+          "width": 452,
+          "expanded": [
+            "/AdvantageKit/RealOutputs/IntakeVisualizer/LeftMechanism/dims",
+            "/AdvantageKit/RealOutputs/IntakeVisualizer/LeftMechanism/Intake/Measured Left",
+            "/AdvantageKit/RealOutputs/IntakeVisualizer/LeftMechanism/Intake/Measured Left/Intake",
+            "/AdvantageKit/RealOutputs/IntakeVisualizer/LeftMechanism/Intake/Measured Left/Intake/Measured Left Intake",
+            "/AdvantageKit/RealOutputs/IntakeVisualizer/Mechanism/Setpoint Left",
+            "/AdvantageKit/RealOutputs/IntakeVisualizer/Mechanism/Measured Left",
+            "/AdvantageKit/RealOutputs/IntakeVisualizer/Mechanism/Measured Left/Left Intake",
+            "/AdvantageKit/RealOutputs/IntakeVisualizer/Mechanism/Setpoint Left/Left Intake",
+            "/Tuning/Turret",
+            "/AdvantageKit/RealOutputs",
+            "/AdvantageKit/Turret",
+            "/AdvantageKit/RealOutputs/Turret/TurnController/Setpoint",
+            "/AdvantageKit/RealOutputs/Mechanism3d",
+            "/Tuning/Turret/Flywheel",
+            "/AdvantageKit",
+            "/AdvantageKit/RealOutputs/Intake",
+            "/RealOutputs",
+            "/Vision/Camera0",
+            "/RealOutputs/ShooterVisualizer/HoodPose/rotation",
+            "/RealOutputs/ShooterVisualizer/TurretPose",
+            "/RealOutputs/Subsystems/Shooter",
+            "/RealOutputs/Subsystems/Shooter/Hood",
+            "/RealOutputs/Subsystems/Shooter/Hood/Inputs",
+            "/RealOutputs/Subsystems/Shooter/Flywheel",
+            "/RealOutputs/Subsystems/Shooter/Flywheel/Inputs",
+            "/RealOutputs/Shooter/Ready",
+            "/RealOutputs/Vision/Camera0"
+          ]
+        },
+        "tabs": {
+          "selected": 1,
+          "tabs": [
+            {
+              "type": 0,
+              "title": "",
+              "controller": null,
+              "controllerUUID": "yhpnmioudo41w2ts3yi1iaf5y3pmnjdb",
+              "renderer": "",
+              "controlsHeight": 0
+            },
+            {
+              "type": 3,
+              "title": "3D Field - Scoring",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "robot",
+                    "logKey": "/RealOutputs/FieldSimulation/RobotPosition",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "model": "Cranberry Alarm"
+                    }
+                  },
+                  {
+                    "type": "component",
+                    "logKey": "/RealOutputs/ComponentPoses/Final",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {}
+                  },
+                  {
+                    "type": "gamePiece",
+                    "logKey": "/RealOutputs/FieldSimulation/Fuels",
+                    "logType": "Translation3d[]",
+                    "visible": true,
+                    "options": {
+                      "variant": "Fuel"
+                    }
+                  },
+                  {
+                    "type": "trajectory",
+                    "logKey": "/RealOutputs/ShooterVisualizer/Trajectory",
+                    "logType": "Translation3d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#00ff00",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "game": "FRC:2026 Field"
+              },
+              "controllerUUID": "gw72q771q1z0rcymjrwghy59zdmgcphl",
+              "renderer": {
+                "cameraIndex": -1,
+                "orbitFov": 50,
+                "cameraPosition": [
+                  -13.568270152910971,
+                  9.617067206500463,
+                  0.3011809527323575
+                ],
+                "cameraTarget": [
+                  -11.77546425430797,
+                  8.408785204610474,
+                  0.3108779170092054
+                ]
+              },
+              "controlsHeight": 324
+            },
+            {
+              "type": 3,
+              "title": "3D Field - For Real Odom Testing",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "robot",
+                    "logKey": "/RealOutputs/FieldSimulation/RobotPosition",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "model": "Cranberry Alarm"
+                    }
+                  },
+                  {
+                    "type": "component",
+                    "logKey": "/RealOutputs/ComponentPoses/Final",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {}
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "/RealOutputs/Vision/Camera0/RobotPosesAccepted",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "model": "Cranberry Alarm",
+                      "color": "#00ff00"
+                    }
+                  },
+                  {
+                    "type": "vision",
+                    "logKey": "/RealOutputs/Vision/Camera0/TagPoses",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#00ff00",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "cone",
+                    "logKey": "/RealOutputs/Vision/Camera0/CameraPose",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#ff0000",
+                      "position": "center"
+                    }
+                  }
+                ],
+                "game": "FRC:2026 Field"
+              },
+              "controllerUUID": "lus3697hz3si63uudbee3n763wu1vyat",
+              "renderer": {
+                "cameraIndex": -1,
+                "orbitFov": 50,
+                "cameraPosition": [
+                  -7.179875222337188,
+                  4.802124775857537,
+                  6.944314968195055
+                ],
+                "cameraTarget": [
+                  -3.3571900648806063,
+                  0.35247648156800515,
+                  2.987327670335547
+                ]
+              },
+              "controlsHeight": 200
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "satellites": [],
+  "version": "26.0.0"
+}

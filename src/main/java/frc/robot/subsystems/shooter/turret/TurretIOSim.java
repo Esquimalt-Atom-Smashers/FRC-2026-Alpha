@@ -1,38 +1,44 @@
 package frc.robot.subsystems.shooter.turret;
 
-import static frc.robot.subsystems.shooter.turret.TurretConstants.kGearRatio;
-
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
-/** Turret IO implementation for simulation. */
+/** Turret IO for simulation; rate-limited setpoint following. */
 public class TurretIOSim implements TurretIO {
 
   private static final double kLoopPeriodSecs = 0.02;
+  /** Max turret rate so that 1 rad takes ~0.3s. */
+  private static final double kMaxRadPerSec = 1.0 / 0.2;
 
-  private final DCMotor gearbox = DCMotor.getKrakenX44Foc(1);
-  private final DCMotorSim sim =
-      new DCMotorSim(
-          LinearSystemId.createDCMotorSystem(gearbox, 0.001, 100.0 / kGearRatio), gearbox);
-
-  private double appliedVolts = 0.0;
+  private double targetPositionRad = 0.0;
+  private double currentPositionRad = 0.0;
+  private boolean isStopped = false;
 
   @Override
   public void updateInputs(TurretIOInputs inputs) {
-    sim.setInputVoltage(MathUtil.clamp(appliedVolts, -12.0, 12.0));
-    sim.update(kLoopPeriodSecs);
+    if (!isStopped) {
+      double errorRad = MathUtil.angleModulus(targetPositionRad - currentPositionRad);
+      double maxStepRad = kMaxRadPerSec * kLoopPeriodSecs;
+      double stepRad = MathUtil.clamp(errorRad, -maxStepRad, maxStepRad);
+      currentPositionRad += stepRad;
+      inputs.velocityRadsPerSec = stepRad / kLoopPeriodSecs;
+    } else {
+      inputs.velocityRadsPerSec = 0.0;
+    }
 
     inputs.motorConnected = true;
-    inputs.positionRads = sim.getAngularPositionRad() / kGearRatio;
-    inputs.velocityRadsPerSec = sim.getAngularVelocityRadPerSec() / kGearRatio;
-    inputs.appliedVolts = appliedVolts;
-    inputs.supplyCurrentAmps = sim.getCurrentDrawAmps();
-  }
+    inputs.positionRads = currentPositionRad;
+    inputs.appliedVolts = 0.0;
+    inputs.supplyCurrentAmps = 0.0;
+  } // End updateInputs
 
   @Override
-  public void setVoltage(double volts) {
-    appliedVolts = volts;
-  }
+  public void setTargetPosition(double targetRads) {
+    targetPositionRad = targetRads;
+    isStopped = false;
+  } // End setTargetPosition
+
+  @Override
+  public void stop() {
+    isStopped = true;
+  } // End stop
 }
