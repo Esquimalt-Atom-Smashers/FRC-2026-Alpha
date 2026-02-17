@@ -392,7 +392,7 @@ public class RobotContainer {
 							() -> isFacingHub, // Face-target enabled
 							() -> isRobotCentric, // Robot-centric (true) vs field-centric (false)
 							faceTargetController,
-							false)); // usePhysicalMaxSpeed: false = use artificial limit (1.6 m/s), true = use physical max
+							true)); // usePhysicalMaxSpeed: false = use artificial limit (1.6 m/s), true = use physical max TODO enable truemax speed
 
 			// Switch to X pattern when X button is pressed
 			driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
