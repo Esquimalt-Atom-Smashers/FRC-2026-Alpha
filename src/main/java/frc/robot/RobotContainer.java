@@ -47,6 +47,8 @@ import frc.robot.subsystems.shooter.flywheel.*;
 import frc.robot.subsystems.shooter.flywheel.Flywheel.FlywheelState;
 import frc.robot.subsystems.vision.*;
 import frc.robot.simulation.FuelSim;
+
+import org.dyn4j.collision.narrowphase.Containment;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -491,46 +493,30 @@ public class RobotContainer {
 				if (flywheel != null) flywheel.setState(FlywheelState.IDLE);
 			}, agitator, transfer, flywheel));
 
-			// Manual Override for Intake Voltage
-			if (manualOverride && intake != null) {
-				final double stepVoltage = 0.25; // TODO: Set step voltage
-				operatorController.povLeft().onTrue(
-						Commands.runOnce(
-								() -> {
-									double next = Math.min(IntakeConstants.kMaxVoltage, intake.getTargetVoltage() + stepVoltage);
-									if (intake.getMode() == Intake.Mode.IDLE) {
-										intake.setIntakingMode();
-										intake.setTargetVoltage(stepVoltage);
-									} else {
-										intake.setTargetVoltage(next);
-									}
-									if (next == 0) {
-										intake.setIdleMode();
-									}
-								},
-								intake));
-				operatorController.povRight().onTrue(
-						Commands.runOnce(
-								() -> {
-									double next = Math.max(-IntakeConstants.kMaxVoltage, intake.getTargetVoltage() - stepVoltage);
-									if (intake.getMode() == Intake.Mode.IDLE) {
-										intake.setReversingMode();
-										intake.setTargetVoltage(-stepVoltage);
-									} else {
-										intake.setTargetVoltage(next);
-									}
-									if (next == 0) {
-										intake.setIdleMode();
-									}
-								},
-								intake));
-			}
+			final double intakeStepVoltage = 0.25; // TODO: Set step voltage
+			// Raise intake voltage
+			operatorController.povLeft().onTrue(
+				new ConditionalCommand(
+					Commands.runOnce(() -> intake.stepVoltage(intakeStepVoltage), intake),
+					new InstantCommand(),
+					() -> (manualOverride && intake != null)
+				)
+			);
+
+			// Lower intake voltage
+			operatorController.povRight().onTrue(
+				new ConditionalCommand(
+					Commands.runOnce(() -> intake.stepVoltage(-intakeStepVoltage), intake),
+					new InstantCommand(),
+					() -> (manualOverride && intake != null)
+				)
+			);
 
 			final double agitatorStepVoltage = 0.25;
 			// Raise agitator voltage
 			operatorController.y().onTrue(
 				new ConditionalCommand(
-					Commands.runOnce(() -> agitator.ChangeTargetVoltage(agitatorStepVoltage), agitator),
+					Commands.runOnce(() -> agitator.stepVoltage(agitatorStepVoltage), agitator),
 					new InstantCommand(),
 					() -> (manualOverride && agitator != null)
 				)
@@ -539,46 +525,29 @@ public class RobotContainer {
 			// Lower agitator voltage
 			operatorController.a().onTrue(
 				new ConditionalCommand(
-					Commands.runOnce(() -> agitator.ChangeTargetVoltage(-agitatorStepVoltage), agitator),
+					Commands.runOnce(() -> agitator.stepVoltage(-agitatorStepVoltage), agitator),
 					new InstantCommand(),
 					() -> (manualOverride && agitator != null)
 				)
 			);
 
-			// Manual Override for Transfer Voltage
-			if (manualOverride && transfer != null) {
-				final double stepVoltage = 0.25; // TODO: Set step voltage
-				operatorController.leftBumper().onTrue(
-						Commands.runOnce(
-							() -> {
-								double next = Math.min(TransferConstants.kMaxVoltage, transfer.getTargetVoltage() + stepVoltage);
-								if (transfer.getMode() == Transfer.Mode.IDLE) {
-									transfer.setStagingMode();
-									transfer.setTargetVoltage(stepVoltage);
-								} else {
-									transfer.setTargetVoltage(next);
-								}
-								if (next == 0) {
-									transfer.setIdleMode();
-								}
-							},
-							transfer));
-				operatorController.rightBumper().onTrue(
-						Commands.runOnce(
-							() -> {
-								double next = Math.max(-TransferConstants.kMaxVoltage, transfer.getTargetVoltage() - stepVoltage);
-								if (transfer.getMode() == Transfer.Mode.IDLE) {
-									transfer.setStagingMode();
-									transfer.setTargetVoltage(-stepVoltage);
-								} else {
-									transfer.setTargetVoltage(next);
-								}
-								if (next == 0) {
-									transfer.setIdleMode();
-								}
-							},
-							transfer));
-			}
+			final double transferStepVoltage = 0.25; // TODO: Set step voltage
+			// Raise transfer voltage
+			operatorController.leftBumper().onTrue(
+				new ConditionalCommand(
+					Commands.runOnce(() -> transfer.stepVoltage(transferStepVoltage), transfer),
+					new InstantCommand(),
+					() -> (manualOverride && transfer != null)
+				)
+			);
+			// Lower transfer voltage
+			operatorController.rightBumper().onTrue(
+				new ConditionalCommand(
+					Commands.runOnce(() -> transfer.stepVoltage(-transferStepVoltage), transfer),
+					new InstantCommand(),
+					() -> (manualOverride && transfer != null)
+				)
+			);
 
 			// Manual Override for Flywheel Velocity
       if (manualOverride && flywheel != null) {

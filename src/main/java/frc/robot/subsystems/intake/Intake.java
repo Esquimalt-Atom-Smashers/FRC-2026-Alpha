@@ -83,6 +83,19 @@ public class Intake extends SubsystemBase {
     return targetVoltage;
   } // End getTargetVoltage
 
+  public void stepVoltage(double stepVoltage) {
+		double next = Math.min(IntakeConstants.kMaxVoltage, getTargetVoltage() + stepVoltage);
+		if (getMode() == Intake.Mode.IDLE) {
+			setIntakingMode();
+			setTargetVoltage(stepVoltage);
+		} else {
+			setTargetVoltage(next);
+		}
+		if (next == 0) {
+			setIdleMode();
+		}
+  }
+
   /** Current mode. */
   public Mode getMode() {
     return mode;

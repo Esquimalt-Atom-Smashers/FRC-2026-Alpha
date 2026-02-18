@@ -78,7 +78,7 @@ public class Agitator extends SubsystemBase {
     targetVoltage = volts;
   } // End setTargetVoltage
 
-  public void ChangeTargetVoltage(double stepVoltage) {
+  public void stepVoltage(double stepVoltage) {
     double next = Math.min(AgitatorConstants.kMaxVoltage, getTargetVoltage() + stepVoltage);
 		if (getMode() == Agitator.Mode.IDLE) {
 			setStagingMode();

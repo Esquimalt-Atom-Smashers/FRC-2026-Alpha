@@ -96,6 +96,19 @@ public class Transfer extends SubsystemBase {
     return targetVoltage;
   } // End getTargetVoltage
 
+  public void stepVoltage(double stepVoltage) {
+		double next = Math.min(TransferConstants.kMaxVoltage, getTargetVoltage() + stepVoltage);
+		if (getMode() == Transfer.Mode.IDLE) {
+			setStagingMode();
+			setTargetVoltage(stepVoltage);
+		} else {
+			setTargetVoltage(next);
+		}
+		if (next == 0) {
+			setIdleMode();
+		}
+  }
+
   /** Current mode. */
   public Mode getMode() {
     return mode;
