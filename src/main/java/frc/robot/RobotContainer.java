@@ -312,7 +312,6 @@ public class RobotContainer {
     configureOperatorBindings(true); // False to disable operator controls
   }
 
-
   /**
    * Configures FuelSim for robot-ball collision in simulation.
    */
@@ -370,7 +369,6 @@ public class RobotContainer {
     System.out.println("====================");
   } // End printPose
 
-
   /**
    * Configure only the drive to enable or disable
    *
@@ -386,16 +384,16 @@ public class RobotContainer {
 		else {
 			// Drive enabled: field/robot-centric drive with turbo and optional face-target
 			drive.setDefaultCommand(
-					DriveCommands.joystickDriveWithTurboAndFaceTarget(
-							drive,
-							() -> -driverController.getLeftX(), // X-axis (left/right)
-							() -> -driverController.getLeftY(), // Y-axis (forward/backward)
-							() -> -driverController.getRightX(), // Omega (rotation)
-							() -> driverController.getRightTriggerAxis(), // Turbo
-							() -> isFacingHub, // Face-target enabled
-							() -> isRobotCentric, // Robot-centric (true) vs field-centric (false)
-							faceTargetController,
-							true)); // usePhysicalMaxSpeed: false = use artificial limit (1.6 m/s), true = use physical max TODO enable truemax speed
+				DriveCommands.joystickDriveWithTurboAndFaceTarget(
+					drive,
+					() -> -driverController.getLeftX(), // X-axis (left/right)
+					() -> -driverController.getLeftY(), // Y-axis (forward/backward)
+					() -> -driverController.getRightX(), // Omega (rotation)
+					() -> driverController.getRightTriggerAxis(), // Turbo
+					() -> isFacingHub, // Face-target enabled
+					() -> isRobotCentric, // Robot-centric (true) vs field-centric (false)
+					faceTargetController,
+					true)); // usePhysicalMaxSpeed: false = use artificial limit (1.6 m/s), true = use physical max TODO enable truemax speed
 
 			// Switch to X pattern when X button is pressed
 			driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
@@ -471,7 +469,8 @@ public class RobotContainer {
 				), 
 				Commands.runOnce(() -> manualOverride = true),
 				() -> manualOverride)
-			));
+			)
+		);
   }
 
   /** 
@@ -483,6 +482,7 @@ public class RobotContainer {
 			// Enable/ Disable Intake
 			operatorController.leftTrigger().onTrue(Commands.runOnce(() -> intake.setIntakingMode(), intake));
 			operatorController.leftTrigger().onFalse(Commands.runOnce(() -> intake.setIdleMode(), intake));
+
 			operatorController.rightTrigger().onTrue(Commands.runOnce(() -> intake.setReversingMode(), intake));
 			operatorController.rightTrigger().onFalse(Commands.runOnce(() -> intake.setIdleMode(), intake));
 
@@ -493,7 +493,7 @@ public class RobotContainer {
 				if (flywheel != null) flywheel.setState(FlywheelState.IDLE);
 			}, agitator, transfer, flywheel));
 
-			final double intakeStepVoltage = 0.25; // TODO: Set step voltage
+			final double intakeStepVoltage = 0.25;
 			// Raise intake voltage
 			operatorController.povLeft().onTrue(
 				new ConditionalCommand(
@@ -531,7 +531,7 @@ public class RobotContainer {
 				)
 			);
 
-			final double transferStepVoltage = 0.25; // TODO: Set step voltage
+			final double transferStepVoltage = 0.25;
 			// Raise transfer voltage
 			operatorController.leftBumper().onTrue(
 				new ConditionalCommand(
@@ -550,28 +550,39 @@ public class RobotContainer {
 			);
 
 			// Manual Override for Flywheel Velocity
-      if (manualOverride && flywheel != null) {
-        final double stepRpm = 50.0; // TODO: Set step velocity
-        final double stepRadsPerSec = Units.rotationsPerMinuteToRadiansPerSecond(stepRpm);
-        operatorController.povUp().onTrue(
-            Commands.runOnce(
-                () -> {
-                  double current = flywheel.getTargetVelocityRadsPerSec();
-                  double next = current + stepRadsPerSec;
-                  flywheel.setTargetVelocityRadsPerSec(next);
-                  flywheel.setState(FlywheelState.CHARGING);
-                },
-                flywheel));
-        operatorController.povDown().onTrue(
-            Commands.runOnce(
-                () -> {
-                  double current = flywheel.getTargetVelocityRadsPerSec();
-                  double next = Math.max(0, current - stepRadsPerSec);
-                  flywheel.setTargetVelocityRadsPerSec(next);
-                  flywheel.setState(next == 0 ? FlywheelState.IDLE : FlywheelState.CHARGING);
-                },
-                flywheel));
-      }
+    	//if (manualOverride && flywheel != null)
+    	final double stepRpm = 50.0; // TODO: Set step velocity
+    	final double stepRadsPerSec = Units.rotationsPerMinuteToRadiansPerSecond(stepRpm);
+
+			// Raise flywheel rpm
+    	operatorController.povUp().onTrue(
+				new ConditionalCommand(
+    			Commands.runOnce(
+    			  () -> {
+    			    double current = flywheel.getTargetVelocityRadsPerSec();
+    			    double next = current + stepRadsPerSec;
+    			    flywheel.setTargetVelocityRadsPerSec(next);
+    			    flywheel.setState(FlywheelState.CHARGING);
+    			  }, flywheel),
+					new InstantCommand(),
+					() -> (manualOverride && flywheel != null)
+				)
+			);
+						
+			// Lower flywheel rpm
+    	operatorController.povDown().onTrue(
+				new ConditionalCommand(
+    	  	Commands.runOnce(
+    	  	  () -> {
+    	  	    double current = flywheel.getTargetVelocityRadsPerSec();
+    	  	    double next = Math.max(0, current - stepRadsPerSec);
+    	  	    flywheel.setTargetVelocityRadsPerSec(next);
+    	  	    flywheel.setState(next == 0 ? FlywheelState.IDLE : FlywheelState.CHARGING);
+    	  	  }, flywheel),
+					new InstantCommand(),
+					() -> (manualOverride && flywheel != null)
+				)
+			);
 
 			// -------- Manual Override + Encoder Reset --------
 			// If Manual Override is false, become true
@@ -585,7 +596,7 @@ public class RobotContainer {
 					Commands.runOnce(() -> manualOverride = true),
 					() -> manualOverride)
 				));
-    }
+    	}
   } // End configureOperatorBindings
 
 
