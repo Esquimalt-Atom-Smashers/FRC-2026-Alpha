@@ -78,6 +78,19 @@ public class Agitator extends SubsystemBase {
     targetVoltage = volts;
   } // End setTargetVoltage
 
+  public void ChangeTargetVoltage(double stepVoltage) {
+    double next = Math.min(AgitatorConstants.kMaxVoltage, getTargetVoltage() + stepVoltage);
+		if (getMode() == Agitator.Mode.IDLE) {
+			setStagingMode();
+			setTargetVoltage(stepVoltage);
+		} else {
+			setTargetVoltage(next);
+		}
+		if (next == 0) {
+			setIdleMode();
+		}
+  }
+
   /** Get the current target voltage. */
   public double getTargetVoltage() {
     return targetVoltage;

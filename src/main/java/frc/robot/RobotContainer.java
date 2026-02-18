@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -392,7 +393,7 @@ public class RobotContainer {
 							() -> isFacingHub, // Face-target enabled
 							() -> isRobotCentric, // Robot-centric (true) vs field-centric (false)
 							faceTargetController,
-							false)); // usePhysicalMaxSpeed: false = use artificial limit (1.6 m/s), true = use physical max
+							true)); // usePhysicalMaxSpeed: false = use artificial limit (1.6 m/s), true = use physical max TODO enable truemax speed
 
 			// Switch to X pattern when X button is pressed
 			driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
@@ -525,40 +526,24 @@ public class RobotContainer {
 								intake));
 			}
 
-			// Manual Override for Agitator Voltage
-			if (manualOverride && agitator != null) {
-				final double stepVoltage = 0.25; // TODO: Set step voltage
-				operatorController.y().onTrue(
-						Commands.runOnce(
-								() -> {
-									double next = Math.min(AgitatorConstants.kMaxVoltage, agitator.getTargetVoltage() + stepVoltage);
-									if (agitator.getMode() == Agitator.Mode.IDLE) {
-										agitator.setStagingMode();
-										agitator.setTargetVoltage(stepVoltage);
-									} else {
-										agitator.setTargetVoltage(next);
-									}
-									if (next == 0) {
-										agitator.setIdleMode();
-									}
-								},
-								agitator));
-				operatorController.a().onTrue(
-						Commands.runOnce(
-								() -> {
-									double next = Math.max(-AgitatorConstants.kMaxVoltage, agitator.getTargetVoltage() - stepVoltage);
-									if (agitator.getMode() == Agitator.Mode.IDLE) {
-										agitator.setStagingMode();
-										agitator.setTargetVoltage(-stepVoltage);
-									} else {
-										agitator.setTargetVoltage(next);
-									}
-									if (next == 0) {
-										agitator.setIdleMode();
-									}
-								},
-								agitator));
-			}
+			final double agitatorStepVoltage = 0.25;
+			// Raise agitator voltage
+			operatorController.y().onTrue(
+				new ConditionalCommand(
+					Commands.runOnce(() -> agitator.ChangeTargetVoltage(agitatorStepVoltage), agitator),
+					null,
+					() -> (manualOverride && agitator != null)
+				)
+			);
+
+			// Lower agitator voltage
+			operatorController.a().onTrue(
+				new ConditionalCommand(
+					Commands.runOnce(() -> agitator.ChangeTargetVoltage(-agitatorStepVoltage), agitator),
+					null,
+					() -> (manualOverride && agitator != null)
+				)
+			);
 
 			// Manual Override for Transfer Voltage
 			if (manualOverride && transfer != null) {
