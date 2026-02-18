@@ -531,7 +531,7 @@ public class RobotContainer {
 			operatorController.y().onTrue(
 				new ConditionalCommand(
 					Commands.runOnce(() -> agitator.ChangeTargetVoltage(agitatorStepVoltage), agitator),
-					null,
+					new InstantCommand(),
 					() -> (manualOverride && agitator != null)
 				)
 			);
@@ -540,7 +540,7 @@ public class RobotContainer {
 			operatorController.a().onTrue(
 				new ConditionalCommand(
 					Commands.runOnce(() -> agitator.ChangeTargetVoltage(-agitatorStepVoltage), agitator),
-					null,
+					new InstantCommand(),
 					() -> (manualOverride && agitator != null)
 				)
 			);
