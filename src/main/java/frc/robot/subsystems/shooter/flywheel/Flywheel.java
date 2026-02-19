@@ -101,6 +101,13 @@ public class Flywheel extends SubsystemBase {
     return Units.radiansPerSecondToRotationsPerMinute(flywheelInputs.velocityRadsPerSec);
   } // End getVelocityRpm
 
+  public void stepVelocityRadsPerSec(double stepRadsPerSec) {
+    double current = getTargetVelocityRadsPerSec();
+    double next = current + stepRadsPerSec;
+    setTargetVelocityRadsPerSec(next);
+    setState(FlywheelState.CHARGING);
+  }
+
   /** Whether the flywheel is at target velocity within tolerance. */
   public boolean atTargetVelocity() {
     double currentVelocityRadsPerSec = flywheelInputs.velocityRadsPerSec;

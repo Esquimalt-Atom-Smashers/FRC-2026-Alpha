@@ -128,13 +128,13 @@ public class RobotContainer {
 			case REAL:
 				if (isDriveEnabled) {
 					drive =
-							new Drive(
-									new GyroIOPigeon2(),
-									new ModuleIOTalonFX(TunerConstants.FrontLeft),
-									new ModuleIOTalonFX(TunerConstants.FrontRight),
-									new ModuleIOTalonFX(TunerConstants.BackLeft),
-									new ModuleIOTalonFX(TunerConstants.BackRight),
-									(pose) -> {});
+						new Drive(
+							new GyroIOPigeon2(),
+							new ModuleIOTalonFX(TunerConstants.FrontLeft),
+							new ModuleIOTalonFX(TunerConstants.FrontRight),
+							new ModuleIOTalonFX(TunerConstants.BackLeft),
+							new ModuleIOTalonFX(TunerConstants.BackRight),
+							(pose) -> {});
 				} else {
 					drive = new Drive(
 						new GyroIO() {},
@@ -148,21 +148,21 @@ public class RobotContainer {
 				// Initialize vision after drive (vision needs drive reference)
 				if (isVisionEnabled) {
 					vision =
-							new Vision(
-									drive,
-									new VisionIOPhotonVision(camera0Name, robotToCamera0),
-									new VisionIOPhotonVision(camera1Name, robotToCamera1));
+						new Vision(
+								drive,
+								new VisionIOPhotonVision(camera0Name, robotToCamera0),
+								new VisionIOPhotonVision(camera1Name, robotToCamera1));
 				} else {
 					vision = new Vision(drive, new VisionIO() {}, new VisionIO() {});
 				}
 
 				// Subsystems
-				intake = isIntakeEnabled ? new Intake(new IntakeIOSparkMax()) : new Intake(new IntakeIO() {});
-				agitator = isAgitatorEnabled ? new Agitator(new AgitatorIOSparkMax()) : new Agitator(new AgitatorIO() {});
+				intake   = isIntakeEnabled 	 ? new Intake(new IntakeIOSparkMax()) 					 : new Intake(new IntakeIO() {});
+				agitator = isAgitatorEnabled ? new Agitator(new AgitatorIOSparkMax()) 			 : new Agitator(new AgitatorIO() {});
 				transfer = isTransferEnabled ? new Transfer(new TransferIOBrushedSparkMax()) : new Transfer(new TransferIO() {});
-				turret = isTurretEnabled ? new Turret(new TurretIOSparkMax()) : new Turret(new TurretIO() {});
-				hood = isHoodEnabled ? new Hood(new HoodIOSparkMax()) : new Hood(new HoodIO() {});
-				flywheel = isFlywheelEnabled ? new Flywheel(new FlywheelIOTalonFX()) : new Flywheel(new FlywheelIO() {});
+				turret   = isTurretEnabled 	 ? new Turret(new TurretIOSparkMax()) 					 : new Turret(new TurretIO() {});
+				hood     = isHoodEnabled  	 ? new Hood(new HoodIOSparkMax()) 							 : new Hood(new HoodIO() {});
+				flywheel = isFlywheelEnabled ? new Flywheel(new FlywheelIOTalonFX()) 				 : new Flywheel(new FlywheelIO() {});
 				shooterSim = null;
 				shooterSimVisualizer = null;
 				break;
@@ -551,19 +551,13 @@ public class RobotContainer {
 
 			// Manual Override for Flywheel Velocity
     	//if (manualOverride && flywheel != null)
-    	final double stepRpm = 50.0; // TODO: Set step velocity
+    	final double stepRpm = 50.0;
     	final double stepRadsPerSec = Units.rotationsPerMinuteToRadiansPerSecond(stepRpm);
 
 			// Raise flywheel rpm
     	operatorController.povUp().onTrue(
 				new ConditionalCommand(
-    			Commands.runOnce(
-    			  () -> {
-    			    double current = flywheel.getTargetVelocityRadsPerSec();
-    			    double next = current + stepRadsPerSec;
-    			    flywheel.setTargetVelocityRadsPerSec(next);
-    			    flywheel.setState(FlywheelState.CHARGING);
-    			  }, flywheel),
+    			Commands.runOnce(() -> flywheel.stepVelocityRadsPerSec(stepRadsPerSec), flywheel),
 					new InstantCommand(),
 					() -> (manualOverride && flywheel != null)
 				)
@@ -572,13 +566,7 @@ public class RobotContainer {
 			// Lower flywheel rpm
     	operatorController.povDown().onTrue(
 				new ConditionalCommand(
-    	  	Commands.runOnce(
-    	  	  () -> {
-    	  	    double current = flywheel.getTargetVelocityRadsPerSec();
-    	  	    double next = Math.max(0, current - stepRadsPerSec);
-    	  	    flywheel.setTargetVelocityRadsPerSec(next);
-    	  	    flywheel.setState(next == 0 ? FlywheelState.IDLE : FlywheelState.CHARGING);
-    	  	  }, flywheel),
+    	  	Commands.runOnce(() -> flywheel.stepVelocityRadsPerSec(-stepRadsPerSec), flywheel),
 					new InstantCommand(),
 					() -> (manualOverride && flywheel != null)
 				)
