@@ -32,19 +32,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Go To Fuel"
+            "pathName": "R-NZ Go To Fuel"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Collect Fuel"
+            "pathName": "NZ Half Sweep Pickup Fuel"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Shooting Position"
+            "pathName": "NZ Half Sweep Shooting"
           }
         },
         {
@@ -63,6 +63,6 @@
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "Neutral Zone Sweeps",
   "choreoAuto": false
 }

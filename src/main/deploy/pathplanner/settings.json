@@ -3,10 +3,14 @@
   "robotLength": 0.9,
   "holonomicMode": true,
   "pathFolders": [
+    "R-Alliance Sweep",
     "Left Start",
-    "Test Auto"
+    "R-NZ Full Sweep",
+    "R-NZ Half Sweep"
   ],
-  "autoFolders": [],
+  "autoFolders": [
+    "Neutral Zone Sweeps"
+  ],
   "defaultMaxVel": 1.0,
   "defaultMaxAccel": 1.0,
   "defaultMaxAngVel": 540.0,
