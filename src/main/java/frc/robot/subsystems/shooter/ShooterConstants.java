@@ -33,8 +33,9 @@ public final class ShooterConstants {
   /**
    * Multiplier on calculator exit velocity (e.g. for air resistance). 1.0 = no change; increase if it under
    * is undershooting, decrease if it is overshooting. // TODO: tune this value
+   * 3.1 is IRL value, 1.05 is SIM value
    */
-  public static final double kExitVelocityCompensationMultiplier = 3.1;
+  public static final double kExitVelocityCompensationMultiplier = 1.05;
 
   /** Scale linear velocity: base in/s, multiplier, power for distance term (unused by current shot). */
   public static final double kScaleLinearVelocityBaseInPerS = 50.0;
