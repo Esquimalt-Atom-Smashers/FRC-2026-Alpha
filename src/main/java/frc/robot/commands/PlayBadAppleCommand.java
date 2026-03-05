@@ -1,5 +1,6 @@
 package frc.robot.commands;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.bad_apple.BadAppleFrame;
 import frc.robot.bad_apple.BadApplePixel;
@@ -12,6 +13,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class PlayBadAppleCommand extends Command {
   BadAppleFrame[] frames;
+  private Timer timer = new Timer();
   public PlayBadAppleCommand(BadAppleFrame[] frames) {
     this.frames = frames;
   } // End ShootWhenReadyCommand Constructor
@@ -19,18 +21,22 @@ public class PlayBadAppleCommand extends Command {
   @Override
   public void initialize() {
     Logger.recordOutput("BadApple/CommandInitiated", true);
+    timer.start();
   } // End initialize
 
   @Override
   public void execute() {
     for (BadAppleFrame frame : frames) {
-      printFrame(frame);
-      
-      try {
-          TimeUnit.MILLISECONDS.sleep(100);
-      } catch (Exception e) {
-        e.printStackTrace();
+      if (timer.hasElapsed(0.1)) {
+        printFrame(frame);
+        timer.reset();                                                                              
       }
+      
+      //try {
+      //    TimeUnit.MILLISECONDS.sleep(3000);
+      //} catch (Exception e) {
+      //  e.printStackTrace();
+      //}
     }
   } // End execute
 
