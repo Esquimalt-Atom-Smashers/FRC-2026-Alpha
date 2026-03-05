@@ -567,10 +567,10 @@ public class RobotContainer {
 
 			Logger.recordOutput("BadApple/Working", false);
     	Logger.recordOutput("BadApple/CommandInitiated", false);
-			//operatorController.a().onTrue(
-			//	Commands.runOnce(() -> {
-			//		Logger.recordOutput("BadApple/Working", true);
-			//	}));
+			operatorController.a().onTrue(
+				Commands.runOnce(() -> {
+					Logger.recordOutput("BadApple/Working", true);
+				}));
 			
 			operatorController.a().onTrue(new PlayBadAppleCommand(badAppleFrames));
 
