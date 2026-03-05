@@ -1,29 +1,59 @@
 package frc.robot.bad_apple;
 
-import org.bytedeco.javacv.*;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.ArrayList;
+
+import org.bytedeco.javacv.FFmpegFrameGrabber;
+import org.bytedeco.javacv.FFmpegFrameRecorder;
+import org.bytedeco.javacv.FFmpegLogCallback;
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.Java2DFrameConverter;
+import org.bytedeco.javacv.OpenCVFrameConverter;
+import static org.bytedeco.opencv.global.opencv_imgproc.resize;
+import org.bytedeco.opencv.opencv_core.Mat;
+import org.bytedeco.opencv.opencv_core.Size;
+import org.bytedeco.ffmpeg.global.avcodec;
+import org.bytedeco.ffmpeg.global.avutil;
 import edu.wpi.first.wpilibj.util.Color;
 
 public class BadAppleUtils {
   public static BufferedImage[] convertVideo(String path, int grabEveryFrame) throws Exception {
-    ArrayList<BufferedImage> frames = new ArrayList<>();
-
-    FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(path);
-    Java2DFrameConverter converter = new Java2DFrameConverter();
-
-    grabber.start();
-
-    Frame frame;
-    while ((frame = grabber.grabImage()) != null) {
-      BufferedImage img = converter.convert(frame);
-      frames.add(img);
-    }
-
-    grabber.stop();
-
-    return frames.toArray(new BufferedImage[0]);
+  
+      final int WIDTH = 16;
+      final int HEIGHT = 12;
+  
+      ArrayList<BufferedImage> frames = new ArrayList<>();
+  
+      FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(path);
+      Java2DFrameConverter converter = new Java2DFrameConverter();
+  
+      grabber.start();
+  
+      Frame frame;
+      int frameIndex = 0;
+  
+      while ((frame = grabber.grabImage()) != null) {
+      
+          if (frameIndex++ % grabEveryFrame != 0) {
+              continue;
+          }
+        
+          BufferedImage img = converter.convert(frame);
+        
+          // resize
+          BufferedImage resized = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_BYTE_BINARY);
+          Graphics2D g = resized.createGraphics();
+        
+          g.drawImage(img, 0, 0, WIDTH, HEIGHT, null);
+          g.dispose();
+        
+          frames.add(resized);
+      }
+    
+      grabber.stop();
+    
+      return frames.toArray(new BufferedImage[0]);
   }
   
   public static BadApplePixel[] convertTo2DUsingGetRGB(BufferedImage image) {

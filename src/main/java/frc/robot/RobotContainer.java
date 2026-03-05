@@ -7,22 +7,25 @@
 
 package frc.robot;
 
-import static frc.robot.subsystems.vision.VisionConstants.*;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+
+import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
-import frc.robot.bad_apple.BadAppleUtils;
-import frc.robot.bad_apple.BadAppleFrame;
-import frc.robot.bad_apple.BadApplePixel;
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -32,30 +35,62 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.bad_apple.BadAppleFrame;
+import frc.robot.bad_apple.BadAppleUtils;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.ShooterCommands;
-import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.drive.*;
-import frc.robot.subsystems.intake.*;
-import frc.robot.subsystems.agitator.*;
 import frc.robot.commands.ShootWhenReadyCommand;
+import frc.robot.commands.ShooterCommands;
+import frc.robot.commands.PlayBadAppleCommand;
+import frc.robot.generated.TunerConstants;
+import frc.robot.simulation.FuelSim;
+import frc.robot.subsystems.agitator.Agitator;
+import frc.robot.subsystems.agitator.AgitatorConstants;
+import frc.robot.subsystems.agitator.AgitatorIO;
+import frc.robot.subsystems.agitator.AgitatorIOSim;
+import frc.robot.subsystems.agitator.AgitatorIOSparkMax;
+import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.GyroIO;
+import frc.robot.subsystems.drive.GyroIOPigeon2;
+import frc.robot.subsystems.drive.GyroIOSim;
+import frc.robot.subsystems.drive.ModuleIO;
+import frc.robot.subsystems.drive.ModuleIOSim;
+import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeConstants;
+import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.intake.IntakeIOSim;
+import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterSim;
 import frc.robot.subsystems.shooter.ShooterSimVisualizer;
-import frc.robot.subsystems.shooter.transfer.*;
-import frc.robot.subsystems.shooter.turret.*;
-import frc.robot.subsystems.shooter.hood.*;
-import frc.robot.subsystems.shooter.flywheel.*;
+import frc.robot.subsystems.shooter.flywheel.Flywheel;
 import frc.robot.subsystems.shooter.flywheel.Flywheel.FlywheelState;
-import frc.robot.subsystems.vision.*;
-import frc.robot.simulation.FuelSim;
-import org.ironmaple.simulation.SimulatedArena;
-import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
-import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.util.ArrayList;
+import frc.robot.subsystems.shooter.flywheel.FlywheelConstants;
+import frc.robot.subsystems.shooter.flywheel.FlywheelIO;
+import frc.robot.subsystems.shooter.flywheel.FlywheelIOSim;
+import frc.robot.subsystems.shooter.flywheel.FlywheelIOTalonFX;
+import frc.robot.subsystems.shooter.hood.Hood;
+import frc.robot.subsystems.shooter.hood.HoodConstants;
+import frc.robot.subsystems.shooter.hood.HoodIO;
+import frc.robot.subsystems.shooter.hood.HoodIOSim;
+import frc.robot.subsystems.shooter.hood.HoodIOSparkMax;
+import frc.robot.subsystems.shooter.transfer.Transfer;
+import frc.robot.subsystems.shooter.transfer.TransferConstants;
+import frc.robot.subsystems.shooter.transfer.TransferIO;
+import frc.robot.subsystems.shooter.transfer.TransferIOBrushedSparkMax;
+import frc.robot.subsystems.shooter.transfer.TransferIOSim;
+import frc.robot.subsystems.shooter.turret.Turret;
+import frc.robot.subsystems.shooter.turret.TurretIO;
+import frc.robot.subsystems.shooter.turret.TurretIOSim;
+import frc.robot.subsystems.shooter.turret.TurretIOSparkMax;
+import frc.robot.subsystems.vision.Vision;
+import static frc.robot.subsystems.vision.VisionConstants.camera0Name;
+import static frc.robot.subsystems.vision.VisionConstants.camera1Name;
+import static frc.robot.subsystems.vision.VisionConstants.robotToCamera0;
+import static frc.robot.subsystems.vision.VisionConstants.robotToCamera1;
+import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOPhotonVision;
+import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -313,9 +348,9 @@ public class RobotContainer {
 			
 
     // Configure button bindings
+		setupBadApple();
     configureDriverBindings(true); // False to disable driving
     configureOperatorBindings(true); // False to disable operator controls
-		setupBadApple();
   }
 
 
@@ -377,21 +412,34 @@ public class RobotContainer {
   } // End printPose
 
 	private void setupBadApple() {
+		Logger.recordOutput("BadApple/TryingBadApple", false);
+		Logger.recordOutput("BadApple/BadAppleSuccessful", false);
+		Logger.recordOutput("BadApple/TotalFrameAmount", 0);
+		Logger.recordOutput("BadApple/Stage", 0);
 		try {
-			ArrayList<BadAppleFrame> badAppleFrames = new ArrayList<>();
-			BufferedImage[] frames = BadAppleUtils.convertVideo("bad_apple/bad_apple.mp4", 10);
+			Logger.recordOutput("BadApple/TryingBadApple", true);
+			ArrayList<BadAppleFrame> badAppleFramesToPlay = new ArrayList<>();
+			Logger.recordOutput("BadApple/Stage", 2);
+			BufferedImage[] frames = BadAppleUtils.convertVideo("src/resources/bad_apple/bad_apple.mp4", 10);
+			Logger.recordOutput("BadApple/Stage", 3);
 
 			for (BufferedImage frame : frames) {
 				BadAppleFrame badAppleFrame = new BadAppleFrame(BadAppleUtils.convertTo2DUsingGetRGB(frame));
-				badAppleFrames.add(badAppleFrame);
+				badAppleFramesToPlay.add(badAppleFrame);
 			}
+			Logger.recordOutput("BadApple/Stage", 4);
 
-			this.badAppleFrames = badAppleFrames.toArray(new BadAppleFrame[0]);
+			this.badAppleFrames = badAppleFramesToPlay.toArray(new BadAppleFrame[0]);
 
-			System.out.println("Total Frame Amount: " + frames.length);
+			Logger.recordOutput("BadApple/TotalFrameAmount", badAppleFrames.length);
+			Logger.recordOutput("BadApple/BadAppleSuccessful", true);
 		} catch(Exception e) {
 			e.printStackTrace();
+			Logger.recordOutput("BadApple/Stage", -1);
+
 		}
+		
+		Logger.recordOutput("BadApple/TryingBadApple", false);
 		
 	}
 
@@ -516,6 +564,15 @@ public class RobotContainer {
 				if (transfer != null) transfer.setIdleMode();
 				if (flywheel != null) flywheel.setState(FlywheelState.IDLE);
 			}, agitator, transfer, flywheel));
+
+			Logger.recordOutput("BadApple/Working", false);
+    	Logger.recordOutput("BadApple/CommandInitiated", false);
+			//operatorController.a().onTrue(
+			//	Commands.runOnce(() -> {
+			//		Logger.recordOutput("BadApple/Working", true);
+			//	}));
+			
+			operatorController.a().onTrue(new PlayBadAppleCommand(badAppleFrames));
 
 			// Manual Override for Intake Voltage
 			if (manualOverride && intake != null) {

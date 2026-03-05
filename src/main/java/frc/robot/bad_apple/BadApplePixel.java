@@ -13,7 +13,7 @@ public class BadApplePixel {
   public int y;
   public Color color;
 
-  public static boolean getColorState(Color color) {
-    return false;
+  public boolean getColorState() {
+    return !(color.red < 50 && color.green < 50 && color.blue < 50);
   }
 }
