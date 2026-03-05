@@ -12,6 +12,9 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
+import frc.robot.bad_apple.BadAppleUtils;
+import frc.robot.bad_apple.BadAppleFrame;
+import frc.robot.bad_apple.BadApplePixel;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -50,6 +53,9 @@ import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.util.ArrayList;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -115,6 +121,8 @@ public class RobotContainer {
 
 	// Robot-centric vs field-centric drive
 	private boolean isRobotCentric = false;
+
+	private BadAppleFrame[] badAppleFrames;
 	//end region
 
 	/** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -307,6 +315,7 @@ public class RobotContainer {
     // Configure button bindings
     configureDriverBindings(true); // False to disable driving
     configureOperatorBindings(true); // False to disable operator controls
+		setupBadApple();
   }
 
 
@@ -367,6 +376,24 @@ public class RobotContainer {
     System.out.println("====================");
   } // End printPose
 
+	private void setupBadApple() {
+		try {
+			ArrayList<BadAppleFrame> badAppleFrames = new ArrayList<>();
+			BufferedImage[] frames = BadAppleUtils.convertVideo("bad_apple/bad_apple.mp4", 10);
+
+			for (BufferedImage frame : frames) {
+				BadAppleFrame badAppleFrame = new BadAppleFrame(BadAppleUtils.convertTo2DUsingGetRGB(frame));
+				badAppleFrames.add(badAppleFrame);
+			}
+
+			this.badAppleFrames = badAppleFrames.toArray(new BadAppleFrame[0]);
+
+			System.out.println("Total Frame Amount: " + frames.length);
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
 
   /**
    * Configure only the drive to enable or disable
