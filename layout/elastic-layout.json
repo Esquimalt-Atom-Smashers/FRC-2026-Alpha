@@ -2051,6 +2051,20 @@
               "true_icon": "None",
               "false_icon": "None"
             }
+          },
+          {
+            "title": "CurrentFrame",
+            "x": 855.0,
+            "y": 190.0,
+            "width": 190.0,
+            "height": 190.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/BadApple/CurrentFrame",
+              "period": 0.06,
+              "data_type": "int",
+              "show_submit_button": false
+            }
           }
         ]
       }
@@ -2418,14 +2432,14 @@
             }
           },
           {
-            "title": "x0y0",
+            "title": "x15y10",
             "x": 1425.0,
             "y": 570.0,
             "width": 95.0,
             "height": 95.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x0y0",
+              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x15y10",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4294967295,
@@ -2501,14 +2515,14 @@
             }
           },
           {
-            "title": "x0y0",
+            "title": "x14y10",
             "x": 1330.0,
             "y": 570.0,
             "width": 95.0,
             "height": 95.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x0y0",
+              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x14y10",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4294967295,
@@ -2636,14 +2650,14 @@
             }
           },
           {
-            "title": "x0y0",
+            "title": "x13y10",
             "x": 1235.0,
             "y": 570.0,
             "width": 95.0,
             "height": 95.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x0y0",
+              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x13y10",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4294967295,
@@ -2823,14 +2837,14 @@
             }
           },
           {
-            "title": "x0y0",
+            "title": "x12y10",
             "x": 1140.0,
             "y": 570.0,
             "width": 95.0,
             "height": 95.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x0y0",
+              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x12y10",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4294967295,
@@ -2840,14 +2854,14 @@
             }
           },
           {
-            "title": "x0y0",
+            "title": "x11y10",
             "x": 1045.0,
             "y": 570.0,
             "width": 95.0,
             "height": 95.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x0y0",
+              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x11y10",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4294967295,
@@ -2857,14 +2871,14 @@
             }
           },
           {
-            "title": "x0y0",
+            "title": "x10y10",
             "x": 950.0,
             "y": 570.0,
             "width": 95.0,
             "height": 95.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x0y0",
+              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x10y10",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4294967295,
@@ -3877,14 +3891,14 @@
             }
           },
           {
-            "title": "x0y0",
+            "title": "x0y9",
             "x": 0.0,
             "y": 475.0,
             "width": 95.0,
             "height": 95.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x0y0",
+              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x0y9",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4294967295,
@@ -3894,14 +3908,14 @@
             }
           },
           {
-            "title": "x0y0",
+            "title": "x0y10",
             "x": 0.0,
             "y": 570.0,
             "width": 95.0,
             "height": 95.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x0y0",
+              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x0y10",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4294967295,
@@ -3911,14 +3925,14 @@
             }
           },
           {
-            "title": "x0y0",
+            "title": "x1y10",
             "x": 95.0,
             "y": 570.0,
             "width": 95.0,
             "height": 95.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x0y0",
+              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x1y10",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4294967295,
@@ -3928,14 +3942,14 @@
             }
           },
           {
-            "title": "x0y0",
+            "title": "x2y10",
             "x": 190.0,
             "y": 570.0,
             "width": 95.0,
             "height": 95.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x0y0",
+              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x2y10",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4294967295,
@@ -3945,14 +3959,14 @@
             }
           },
           {
-            "title": "x0y0",
+            "title": "x3y10",
             "x": 285.0,
             "y": 570.0,
             "width": 95.0,
             "height": 95.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x0y0",
+              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x3y10",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4294967295,
@@ -3962,14 +3976,14 @@
             }
           },
           {
-            "title": "x0y0",
+            "title": "x4y10",
             "x": 380.0,
             "y": 570.0,
             "width": 95.0,
             "height": 95.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x0y0",
+              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x4y10",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4294967295,
@@ -3979,14 +3993,14 @@
             }
           },
           {
-            "title": "x0y0",
+            "title": "x5y10",
             "x": 475.0,
             "y": 570.0,
             "width": 95.0,
             "height": 95.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x0y0",
+              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x5y10",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4294967295,
@@ -3996,14 +4010,14 @@
             }
           },
           {
-            "title": "x0y0",
+            "title": "x6y10",
             "x": 570.0,
             "y": 570.0,
             "width": 95.0,
             "height": 95.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x0y0",
+              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x6y10",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4294967295,
@@ -4013,14 +4027,14 @@
             }
           },
           {
-            "title": "x0y0",
+            "title": "x7y10",
             "x": 665.0,
             "y": 570.0,
             "width": 95.0,
             "height": 95.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x0y0",
+              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x7y10",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4294967295,
@@ -4030,14 +4044,14 @@
             }
           },
           {
-            "title": "x0y0",
+            "title": "x8y10",
             "x": 760.0,
             "y": 570.0,
             "width": 95.0,
             "height": 95.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x0y0",
+              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x8y10",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4294967295,
@@ -4047,14 +4061,14 @@
             }
           },
           {
-            "title": "x0y0",
+            "title": "x9y10",
             "x": 855.0,
             "y": 570.0,
             "width": 95.0,
             "height": 95.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x0y0",
+              "topic": "/AdvantageKit/RealOutputs/BadApple/Pixels/x9y10",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4294967295,
