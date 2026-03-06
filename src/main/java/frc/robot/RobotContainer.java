@@ -416,6 +416,8 @@ public class RobotContainer {
 		Logger.recordOutput("BadApple/BadAppleSuccessful", false);
 		Logger.recordOutput("BadApple/TotalFrameAmount", 0);
 		Logger.recordOutput("BadApple/Stage", 0);
+		Logger.recordOutput("BadApple/CurrentFrame", 0);
+
 		try {
 			Logger.recordOutput("BadApple/TryingBadApple", true);
 			ArrayList<BadAppleFrame> badAppleFramesToPlay = new ArrayList<>();

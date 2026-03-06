@@ -14,6 +14,8 @@ public class BadApplePixel {
   public Color color;
 
   public boolean getColorState() {
-    return !(color.red < 50 && color.green < 50 && color.blue < 50);
+    double threshold = 0.5; // anything below is black, above is white
+    boolean isWhite = color.red > threshold && color.green > threshold && color.blue > threshold;
+    return isWhite;
   }
 }

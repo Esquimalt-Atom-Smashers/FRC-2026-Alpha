@@ -12,7 +12,8 @@ import java.util.concurrent.TimeUnit;
  * runs Transfer then 0.25 s later Agitator (shooting mode). Idles both on end/cancel.
  */
 public class PlayBadAppleCommand extends Command {
-  BadAppleFrame[] frames;
+  private int frameIndex = 0;
+  private BadAppleFrame[] frames;
   private Timer timer = new Timer();
   public PlayBadAppleCommand(BadAppleFrame[] frames) {
     this.frames = frames;
@@ -26,17 +27,14 @@ public class PlayBadAppleCommand extends Command {
 
   @Override
   public void execute() {
-    for (BadAppleFrame frame : frames) {
-      if (timer.hasElapsed(0.1)) {
-        printFrame(frame);
-        timer.reset();                                                                              
-      }
+    if (frameIndex >= frames.length)
+      return;
       
-      //try {
-      //    TimeUnit.MILLISECONDS.sleep(3000);
-      //} catch (Exception e) {
-      //  e.printStackTrace();
-      //}
+    if (timer.hasElapsed(0.1)) {
+      Logger.recordOutput("BadApple/CurrentFrame", frameIndex);
+      printFrame(frames[frameIndex]);
+      timer.reset();
+      frameIndex++;
     }
   } // End execute
 
@@ -46,6 +44,7 @@ public class PlayBadAppleCommand extends Command {
 
   private void printFrame(BadAppleFrame frame) {
     for (BadApplePixel pixel : frame.pixels) {
+      System.out.println("Color: " + pixel.getColorState());
       Logger.recordOutput("BadApple/Pixels/x" + pixel.x + "y" + pixel.y, pixel.getColorState());
     }
   }
