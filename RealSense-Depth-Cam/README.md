@@ -30,5 +30,5 @@ Connects with RealSense camera and:
             'post_lateral' - Number, horizontal centre of the post-mask in pixels (0 is left-side, 480 is max/right-side of image)
             'post_depth' - Number, horizontal distance from camera (depth) in metres
 
-At the time of writing, the plan is to use this camera and code for final alignment during climbing stage. The turret-targeting cameras and April-tags will be used to get "close" to the post (30 to 40cm away). Once the "Post Detection" NetworkTable boolen "post_detected" is TRUE, the RoboRIO climbing code will switch to using the "Post Detection" NetworkTable data, "post_x" and "post_depth" to accurately position so it can attach and climb.
+At the time of writing, the plan is to use this camera and code for final alignment during climbing stage. The turret-targeting cameras and April-tags will be used to get "close" to the post (30 to 40cm away). Once the "Post Detection" NetworkTable boolen "post_detected" is TRUE, the RoboRIO climbing code will switch to using the "Post Detection" NetworkTable data, "post_lateral" and "post_depth" to accurately position so it can attach and climb.
 
