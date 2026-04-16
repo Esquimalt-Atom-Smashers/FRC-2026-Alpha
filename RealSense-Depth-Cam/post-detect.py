@@ -41,8 +41,8 @@ import requests
 ##########
 # set a variable to turn off all displays if we're in actual match
 BenchTesting = False 
-
 ###########
+
 # Set up RealSense camera before checking for RoboRIO connection
 
 # Initialize and configure the pipeline
@@ -83,7 +83,7 @@ RoboReady = False
 
 while RoboReady == False:
     try:
-        response = requests.get(f"http://10.73.34.2/nisysapi/server", timeout=5)
+        response = requests.get(f"http://10.72.87.2/nisysapi/server", timeout=5)
         print("Status_code", response.status_code)
         if response.status_code == 404:
             RoboReady = True
@@ -94,7 +94,7 @@ while RoboReady == False:
         print("Error connecting to RoboRIO:", e)
 
 # Connect to the RoboRIO
-NetworkTables.initialize(server='10.73.34.2')
+NetworkTables.initialize(server='10.72.87.2')
 
 # set up variables and NetworkTables outside the loop
 
