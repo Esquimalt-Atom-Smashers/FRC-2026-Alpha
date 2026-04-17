@@ -4,6 +4,8 @@ import static frc.robot.subsystems.hang.HangConstants.*;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DigitalOutput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -19,11 +21,14 @@ public class Hang extends SubsystemBase {
     STORED,
     HANGING,
     LEVEL_1,
-    MANUAL
+    MANUAL,
+    CALIBRATING
   } // End State enum
 
   private final HangIO hangIO;
   private final HangIO.HangIOInputs hangInputs = new HangIO.HangIOInputs();
+
+  private DigitalInput zeroingSensor = new DigitalInput(zeroSensorId);
 
   private State state = State.IDLE;
   private double targetPositionMeters = kStoredPositionMeters;
@@ -60,6 +65,16 @@ public class Hang extends SubsystemBase {
 
     // Set the Hang position based on the current state.
     switch (state) {
+      case CALIBRATING:
+        if(IsHangAtZero()){
+          setIdleState();
+          hangIO.resetEncoders();
+          hangIO.stop();
+        }
+        else{
+          stepPositionMeters(-4);
+        }
+        break;
       case STORED:
       case HANGING:
       case LEVEL_1:
@@ -135,6 +150,10 @@ public class Hang extends SubsystemBase {
     return ignoreLimitsSupplier.getAsBoolean() ? targetPositionMeters : clampTargetPosition(targetPositionMeters);
   } // End getSetpointMeters
 
+  private boolean IsHangAtZero(){
+    boolean atZero = zeroingSensor.get();
+    return(atZero);
+  }
 
   /** Reset encoder and sync target to max position. */
   public void resetEncoders() {

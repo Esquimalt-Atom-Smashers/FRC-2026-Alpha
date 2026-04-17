@@ -11,6 +11,9 @@ public final class HangConstants {
   /** CAN ID of the Hang motor (NEO 550 on SPARK MAX). */
   public static final int kMotorId = 9;
 
+  /** The ID of the hall effect sensor below the actuator to sense a magnet signifying the bottom of the hang. */
+  public static final int zeroSensorId = 2;
+
   /** Idle behavior when output is zero (coast or brake). */
   public static final SparkBaseConfig.IdleMode kIdleMode = SparkBaseConfig.IdleMode.kBrake;
 
