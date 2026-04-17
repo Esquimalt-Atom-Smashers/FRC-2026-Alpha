@@ -1,4 +1,4 @@
-# Version 6.2 (previously named post-HSV-Depth-nt.py)
+# Version 6.3 (previously named post-HSV-Depth-nt.py)
 #
 # This will connect with the Roborio and publish a table 'PostDetection' that includes:
 #     if a post is detected (boolean) 
@@ -99,7 +99,7 @@ NetworkTables.initialize(server='10.72.87.2')
 # set up variables and NetworkTables outside the loop
 
 # Get the NetworkTables table to publish depth and lateral position
-table = NetworkTables.getTable('PostDetection')
+table = NetworkTables.getTable('/AdvantageKit/PostDetection')
 
 # set redalliance True or False 
 redalliance = False
