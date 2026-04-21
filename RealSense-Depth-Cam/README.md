@@ -43,5 +43,5 @@ The horizontal/lateral position of the post centre:<img width="320" height="272"
          - 'post_lateral': Number, horizontal displacement perpendicular to depth-direction, in metres
          - 'post_depth': Number, distance from camera (normal to camera-face) in metres
 
-At the time of writing, the plan is to use this camera and code for final alignment during climbing stage. The turret-targeting cameras and April-tags will be used to get "close" to the post (30 to 40cm away). Once the "Post Detection" NetworkTable boolen "post_detected" is TRUE, the RoboRIO climbing code will switch to using the "Post Detection" NetworkTable data, "post_lateral" and "post_depth" to accurately position so it can attach and climb.
+At the time of writing, the plan is to use this camera and code for final alignment during climbing stage. Odometry and possibly turret-targeting cameras will be used to get "close" to the post (30 to 50cm away). Once the "Post Detection" NetworkTable boolen "post_detected" is TRUE, the RoboRIO climbing code will switch to using the "Post Detection" NetworkTable data, "post_lateral" and "post_depth" to accurately position so it can attach and climb.
 
