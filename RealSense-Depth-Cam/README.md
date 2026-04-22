@@ -24,24 +24,24 @@ flowchart LR;
 
 # Script Step-by-step: Post Detection 
 Connects with RealSense camera and:  
-   1. Images from RGB (colour) and LIDAR (depth) cameras are aligned prior to entering loop. <br /> The clipping distance was also set.
-   2. Depth-camera image used: all pixels where distance greater-than clipping distance are set to black.<br />Image is then cleaned using OpenCV morphologyEx: MORPH_CLOSE using Rectangular element.
+   1. Images from RGB (colour) and LIDAR (depth) cameras are aligned prior to entering loop. <br /> Clipping distance was also set.
+   2. Although alliance colour (redalliance is set to True or False) was set before entering, it is checked within the loop to avoid timing issues with FMSInfo updates. There is a chance that the RoboRIO and RealSense Pi initialize before alliance has been updated in FMSInfo.
+   3. Depth-camera image used: all pixels where distance greater-than clipping distance are set to black.<br />Image is then cleaned using OpenCV morphologyEx: MORPH_CLOSE using Rectangular element.
 
 | The raw image from the RGB camera   | raw mask from the depth camera | Lightly cleaned depth mask |
 | :--- | :--- | :--- |
 | <img width="319" height="273" alt="image" src="https://github.com/user-attachments/assets/6bec244b-dedd-4c40-8c1e-c12aa92dcb25" /> | <img width="320" height="263" alt="image" src="https://github.com/user-attachments/assets/d7e90a09-01db-482d-b4b7-3b74b936928c" /> | <img width="320" height="267" alt="image" src="https://github.com/user-attachments/assets/ebda7f8e-7577-4b4d-9c6f-641a4d70bdcd" /> |
 
-   3. depth mask is applied to colour image: <img width="320" height="274" alt="image" src="https://github.com/user-attachments/assets/be8b1bc3-3fda-4f09-a560-5e7ea903646d" />  
+   4. depth mask is applied to colour image: <img width="320" height="274" alt="image" src="https://github.com/user-attachments/assets/be8b1bc3-3fda-4f09-a560-5e7ea903646d" />  
 
+   5. HSV colour mask is then applied: all pixels out of colour range (red or blue) are set to black
 
-   4. HSV colour mask is then applied: all pixels out of colour range (red or blue) are set to black
 | pixels within HSV range are set to light grey | colour-mask applied to depth-masked colour image from step 2* |
 | :--- | :--- |
 | <img width="319" height="267" alt="image" src="https://github.com/user-attachments/assets/83b86f09-e6ae-42b1-9551-bf8b698cf985" /> | <img width="318" height="269" alt="image" src="https://github.com/user-attachments/assets/bef6731a-03c9-417a-b180-f71cf634860c" /> |
 |   |  *Note: just for illustration, this isn't used by the program |  
 
-
-   5. OpenCV "contours" used to choose most post-like piece of image:
+   6. OpenCV "contours" used to choose most post-like piece of image:
          - small contours are ignored as noise (<5 wide or <20 high)
          - only contours with minimum aspect ratio (height/width) greater than set value are considered
          - Note: minimum aspect-ratio was originally 2.0, but reduced to 1.6 after testing
