@@ -6,27 +6,42 @@ This will connect with the Roborio and publish a table 'PostDetection' that incl
      the horizontal left/right (lateral) position in metres
      the depth (horizontal distance normal front of camera front) in metres
 
+# Starting up
+Prior to entering the main loop, the Pi starts itself up and waits for the RoboRIO:
+```mermaid
+flowchart LR;
+    A1[Start] --> A2[<div align="left"> Set up RealSense Camera:
+1. Initialize RGB & depth cam streams
+2. Align colour & Depth streams
+3. Apply instrinsics to colour</div>];
+    A2 --> B;
+    B[Ping RoboRIO] --> C{RoboRIO Ready?};
+    C -->|Yes| D[set up NetworkTable:<br />/AdvantageKit/PostDetection];
+    C -->|No| B;
+    D --> E[Pull Alliance colour from FMSInfo NetworkTable];
+    E --> F[Enter Post Detection loop]
+```
+
 # Script Step-by-step: Post Detection 
 Connects with RealSense camera and:  
-   0. Images from RGB (colour) camera and LIDAR (depth) camera are aligned. The clipping distance is set (all pixels from 3D camera that are farther than clipping distance will be ignored)
-   1. all pixels > clipping distance are set to black. This image is then cleaned using OpenCV morphologyEx: MORPH_CLOSE using Rectangular element.
+   1. Images from RGB (colour) and LIDAR (depth) cameras are aligned prior to entering loop. <br /> The clipping distance was also set.
+   2. Depth-camera image used: all pixels where distance greater-than clipping distance are set to black.<br />Image is then cleaned using OpenCV morphologyEx: MORPH_CLOSE using Rectangular element.
 
 | The raw image from the RGB camera   | raw mask from the depth camera | Lightly cleaned depth mask |
 | :--- | :--- | :--- |
 | <img width="319" height="273" alt="image" src="https://github.com/user-attachments/assets/6bec244b-dedd-4c40-8c1e-c12aa92dcb25" /> | <img width="320" height="263" alt="image" src="https://github.com/user-attachments/assets/d7e90a09-01db-482d-b4b7-3b74b936928c" /> | <img width="320" height="267" alt="image" src="https://github.com/user-attachments/assets/ebda7f8e-7577-4b4d-9c6f-641a4d70bdcd" /> |
 
-   2. depth mask is applied to colour image: <img width="320" height="274" alt="image" src="https://github.com/user-attachments/assets/be8b1bc3-3fda-4f09-a560-5e7ea903646d" />  
+   3. depth mask is applied to colour image: <img width="320" height="274" alt="image" src="https://github.com/user-attachments/assets/be8b1bc3-3fda-4f09-a560-5e7ea903646d" />  
 
 
-   3. HSV colour mask is then applied: all pixels out of colour range (red or blue) are set to black
-
+   4. HSV colour mask is then applied: all pixels out of colour range (red or blue) are set to black
 | pixels within HSV range are set to light grey | colour-mask applied to depth-masked colour image from step 2* |
 | :--- | :--- |
 | <img width="319" height="267" alt="image" src="https://github.com/user-attachments/assets/83b86f09-e6ae-42b1-9551-bf8b698cf985" /> | <img width="318" height="269" alt="image" src="https://github.com/user-attachments/assets/bef6731a-03c9-417a-b180-f71cf634860c" /> |
 |   |  *Note: just for illustration, this isn't used by the program |  
 
 
-   4. OpenCV "contours" used to choose most post-like piece of image:
+   5. OpenCV "contours" used to choose most post-like piece of image:
          - small contours are ignored as noise (<5 wide or <20 high)
          - only contours with minimum aspect ratio (height/width) greater than set value are considered
          - Note: minimum aspect-ratio was originally 2.0, but reduced to 1.6 after testing
@@ -37,7 +52,7 @@ Connects with RealSense camera and:
          - as camera gets closer to post, precision should increase as edge noise has less weight  
          - horizontal/lateral position of the post centre:<img width="320" height="272" alt="image" src="https://github.com/user-attachments/assets/52c27404-3ac6-43b6-8e71-3848a216e2d5" />  
 
-   5. Results are published to NetworkTable 'PostDetection'
+   6. Results are published to NetworkTable 'PostDetection'
       | Name | Data Type | Description |
       | :--- | :--- | :--- |
       | 'post_detected' | Boolean | True if post detected |
