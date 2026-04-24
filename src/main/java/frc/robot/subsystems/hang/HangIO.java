@@ -20,6 +20,12 @@ public interface HangIO {
   /** Set the target position in meters. */
   default void setTargetPosition(double targetMeters) {}
 
+  /** Sets the target voltage */
+  default void setVoltage(double targetVoltage) {}
+
+  /** Returns the value from the external sensor */
+  default boolean isCalibrated()  {return false;}
+
   /** Sets the encoder position (implementation-defined). */
   default void resetEncoders() {}
 

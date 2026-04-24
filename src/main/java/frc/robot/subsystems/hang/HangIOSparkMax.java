@@ -12,6 +12,7 @@ import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /** Hang IO using a single SPARK MAX (NEO 550) with onboard position control. */
@@ -24,6 +25,8 @@ public class HangIOSparkMax implements HangIO {
   private double lastP = kP;
   private double lastI = kI;
   private double lastD = kD;
+
+  private DigitalInput zeroSensor = new DigitalInput(zeroSensorId);
 
   public HangIOSparkMax() {
     motor = new SparkMax(kMotorId, SparkLowLevel.MotorType.kBrushless);
@@ -84,6 +87,16 @@ public class HangIOSparkMax implements HangIO {
   public void setTargetPosition(double targetMeters) {
     closedLoopController.setSetpoint(targetMeters, SparkBase.ControlType.kPosition);
   } // End setTargetPosition
+
+  @Override
+  public void setVoltage(double targetVoltage){
+    motor.setVoltage(targetVoltage);
+  }
+
+  @Override
+  public boolean isCalibrated(){
+    return zeroSensor.get();
+  }
 
   @Override
   public void resetEncoders() {

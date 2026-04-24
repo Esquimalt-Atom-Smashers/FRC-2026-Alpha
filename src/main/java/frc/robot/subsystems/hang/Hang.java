@@ -5,7 +5,6 @@ import static frc.robot.subsystems.hang.HangConstants.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DigitalOutput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -28,9 +27,7 @@ public class Hang extends SubsystemBase {
   private final HangIO hangIO;
   private final HangIO.HangIOInputs hangInputs = new HangIO.HangIOInputs();
 
-  private DigitalInput zeroingSensor = new DigitalInput(zeroSensorId);
-
-  private State state = State.IDLE;
+  private State state = State.CALIBRATING;
   private double targetPositionMeters = kStoredPositionMeters;
   private BooleanSupplier ignoreLimitsSupplier = () -> false;
 
@@ -54,6 +51,7 @@ public class Hang extends SubsystemBase {
     Logger.recordOutput("Subsystems/Hang/TargetPositionInches", Units.metersToInches(targetPositionMeters));
     Logger.recordOutput("Subsystems/Hang/AtTargetPosition", atTargetPosition());
     Logger.recordOutput("Subsystems/Hang/State", state.name());
+    Logger.recordOutput("Subsystems/Hang/Calibrated", hangIO.isCalibrated());
 
     if (DriverStation.isDisabled()) {
       hangIO.stop();
@@ -66,13 +64,14 @@ public class Hang extends SubsystemBase {
     // Set the Hang position based on the current state.
     switch (state) {
       case CALIBRATING:
-        if(IsHangAtZero()){
-          setIdleState();
+        if(hangIO.isCalibrated()){
           hangIO.resetEncoders();
+          state = State.IDLE;
+          setTargetPositionMeters(getPositionMeters());
           hangIO.stop();
         }
         else{
-          stepPositionMeters(-4);
+          hangIO.setVoltage(-1);
         }
         break;
       case STORED:
@@ -90,10 +89,17 @@ public class Hang extends SubsystemBase {
 
   /** Set state to Idle (motor stopped). */
   public void setIdleState() {
+    if(state == State.CALIBRATING){return;}
     state = State.IDLE;
     setTargetPositionMeters(getPositionMeters());
     hangIO.stop();
   } // End setIdleState
+  
+  /** Set state Calibrating (retracts and zeros) */
+  public void setCalibratingState(){
+    hangIO.stop();
+    state = State.CALIBRATING;
+  }
 
   /** Set state to Stored (retracted position). */
   public void setStoredState() {
@@ -149,11 +155,6 @@ public class Hang extends SubsystemBase {
   private double getSetpointMeters() {
     return ignoreLimitsSupplier.getAsBoolean() ? targetPositionMeters : clampTargetPosition(targetPositionMeters);
   } // End getSetpointMeters
-
-  private boolean IsHangAtZero(){
-    boolean atZero = zeroingSensor.get();
-    return(atZero);
-  }
 
   /** Reset encoder and sync target to max position. */
   public void resetEncoders() {
