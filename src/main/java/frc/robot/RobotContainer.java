@@ -78,7 +78,7 @@ public class RobotContainer {
 
 	// Competition Toggle
 	@AutoLogOutput(key = "CompetitionToggle")
-	private boolean isCompetition = true;
+	private boolean isCompetition = false;
 
 	// Subsystems Toggle
 	private boolean isDriveEnabled 		= true;
@@ -95,8 +95,8 @@ public class RobotContainer {
 
 	// Simulation Toggle
 	private boolean halfFuelOnly 			= false;
-	private boolean shooterSimEnabled	= true;
-	private boolean fuelSimEnabled 		= true;
+	private boolean shooterSimEnabled	= false;
+	private boolean fuelSimEnabled 		= false;
 
 	// Subsystems
 	private final Drive drive;
@@ -411,8 +411,8 @@ public class RobotContainer {
 			// Set up Swerve Calibration Programs
 			DriveCommands.swerveCalibration(autoChooser, drive);
 
-			// Record zeroed Robot components (model_0 Turret, model_1 Extender, model_2 extending-storage) – initial only; updated in updateSimulation()
-			Logger.recordOutput("ComponentPoses/Zeroed", new Pose3d[] {new Pose3d(), new Pose3d(), new Pose3d()});
+			// Record zeroed Robot components (model_0 Turret, model_1 Extender, model_2 extending-storage, model_3 Hood) – initial only; updated in updateSimulation()
+			Logger.recordOutput("ComponentPoses/Zeroed", new Pose3d[] {new Pose3d(), new Pose3d(), new Pose3d(), new Pose3d()});
 		}
 
 		// Record zeroed Robot components (model_0 Turret, model_1 Extender) – initial only; updated in updateSimulation()
@@ -420,7 +420,8 @@ public class RobotContainer {
 				new Pose3d[] {
 					new Pose3d(-0.095, -0.17, 0.31, new Rotation3d(0, 0, 0)), // model_0 Turret
 					new Pose3d(0.275, 0, 0.195, new Rotation3d(0, 0, 0)),  // model_1 Extender
-					new Pose3d(-0.29635, 0.055, 0.215, new Rotation3d(0, 0, 0))   // model_2 Hang
+					new Pose3d(-0.29635, 0.055, 0.215, new Rotation3d(0, 0, 0)),   // model_2 Hang
+					new Pose3d(-0.095, -0.09, 0.41, new Rotation3d(0, 0, 0))   // model_3 Hood
 				}
 		);
 		
@@ -1208,11 +1209,12 @@ public class RobotContainer {
 	} // End registerFuelSimExtraRobotIntake
 
 	/** Robot-relative component poses for AdvantageScope Simulation. */
-	private static Pose3d[] buildComponentPoses(Turret turret, Extender extender, Hang hang) {
+	private static Pose3d[] buildComponentPoses(Turret turret, Extender extender, Hang hang, Hood hood) {
 		return new Pose3d[] {
 			new Pose3d(-0.095, -0.17, 0.31, new Rotation3d(0, 0, turret.getRobotFramePosition().getRadians() - Math.toRadians(90))),
 			new Pose3d(0.275, 0, 0.195, new Rotation3d(0, extender.getPositionRad() - Math.toRadians(90), 0)),
 			new Pose3d(-0.29635, 0.055, 0.215 + hang.getPositionMeters(), new Rotation3d(0, 0, 0)), // Placeholder pose for Hang; update when Hang sim is implemented
+			new Pose3d(-0.095, -0.09, 0.41, new Rotation3d(0, hood.getAngleRad(), turret.getRobotFramePosition().getRadians() - Math.toRadians(90)))
 		};
 	} // End buildComponentPoses
 
@@ -1274,11 +1276,11 @@ public class RobotContainer {
 			field.getObject("robotPoseSim2").setPose(secondSimRobotPose);
 		}
 
-		Logger.recordOutput("ComponentPoses/Final", buildComponentPoses(turret, extender, hang));
+		Logger.recordOutput("ComponentPoses/Final", buildComponentPoses(turret, extender, hang, hood));
 		if (secondSimBundle != null && simSecondRobotSession.isDriveEnabledFromDashboard()) {
 			Logger.recordOutput(
 					SecondSimRobotOutputs.LOG_ROOT_PREFIX + "ComponentPoses/Final",
-					buildComponentPoses(secondSimBundle.turret, secondSimBundle.extender, secondSimBundle.hang));
+					buildComponentPoses(secondSimBundle.turret, secondSimBundle.extender, secondSimBundle.hang, secondSimBundle.hood));
 		}
 
 		// Update field view

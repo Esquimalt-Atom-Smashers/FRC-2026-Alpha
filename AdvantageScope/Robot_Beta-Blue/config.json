@@ -85,6 +85,24 @@
         -0.055, 
         -0.175
       ] 
+    },
+    {
+      "_comment": "Hood Rotation and Position",
+      "zeroedRotations": [
+        {
+          "axis": "x",
+          "degrees": 90
+        },
+        {
+          "axis": "z",
+          "degrees": 90
+        }
+      ],
+      "zeroedPosition": [
+        0.095, 
+        0.09, 
+        -0.41
+      ]
     }
   ]
 }
