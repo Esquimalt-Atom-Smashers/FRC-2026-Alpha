@@ -1214,7 +1214,7 @@ public class RobotContainer {
 			new Pose3d(-0.095, -0.17, 0.31, new Rotation3d(0, 0, turret.getRobotFramePosition().getRadians() - Math.toRadians(90))),
 			new Pose3d(0.275, 0, 0.195, new Rotation3d(0, extender.getPositionRad() - Math.toRadians(90), 0)),
 			new Pose3d(-0.29635, 0.055, 0.215 + hang.getPositionMeters(), new Rotation3d(0, 0, 0)), // Placeholder pose for Hang; update when Hang sim is implemented
-			new Pose3d(-0.095, -0.09, 0.41, new Rotation3d(0, hood.getAngleRad(), turret.getRobotFramePosition().getRadians() - Math.toRadians(90)))
+			new Pose3d(-0.095, -0.09, 0.41, new Rotation3d(hood.getAngleRad(), 0, turret.getRobotFramePosition().getRadians() - Math.toRadians(90)))
 		};
 	} // End buildComponentPoses
 
