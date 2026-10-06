@@ -91,7 +91,7 @@ public class RobotContainer {
 	private boolean isHoodEnabled 		= true;
 	private boolean isFlywheelEnabled = true;
 	private boolean isHangEnabled 		= true;
-	private boolean isCandleEnabled 	= false;
+	private boolean isCandleEnabled 	= true;
 
 	// Simulation Toggle
 	private boolean halfFuelOnly 			= false;
