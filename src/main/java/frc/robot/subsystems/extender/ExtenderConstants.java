@@ -19,7 +19,7 @@ public final class ExtenderConstants {
   public static final boolean kMotorInverted = false;
 
   /** Smart current limit. */
-  public static final int kSmartCurrentLimitAmps = 40;
+  public static final int kSmartCurrentLimitAmps = 80;
 
   /** Extender radians per motor rotation 1.0 = 1:1 */
   public static final double kGearRatio = 100;
