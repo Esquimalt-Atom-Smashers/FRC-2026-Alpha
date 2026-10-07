@@ -19,19 +19,22 @@ public class CANdleConstants {
   /** Default brightness of all the LEDs for the brightness scalar */
   public static final double kDefaultBrightness = 0.2;
 
-  /** Solid orange: default enabled idle indication */
-  public static final RGBWColor kIdleColor = new RGBWColor(255, 40, 0, 255);
-  /** Solid green: shoot-when-ready active and can shoot */
-  public static final RGBWColor kShootWhenReadyColor = new RGBWColor(0, 255, 0, 255);
-  /** Solid blue: shoot-when-ready active but cant shoot */
-  public static final RGBWColor kShootWhenReadyScheduledColor = new RGBWColor(0, 0, 255, 255);
   /** Strobe red: driver or operator manual override */
   public static final RGBWColor kManualOverrideColor = new RGBWColor(255, 0, 0, 255);
-  /** Strobe red: driver or operator manual override */
-  public static final RGBWColor kShootWhenReadyTempDisabledColor = new RGBWColor(133, 109, 20, 255);
+  /** Solid red: shoot-when-ready active and can shoot */
+  public static final RGBWColor kHangActiveColor = new RGBWColor(255, 0, 0, 255); // TODO: SET COLOR
+  /** Solid purple: shoot command is active */
+  public static final RGBWColor kShootActiveColor = new RGBWColor(166, 86, 247, 255); // TODO: SET COLOR
+  /** Strobe blue: intake state is "REVERSING" */
+  public static final RGBWColor kIntakeOutColor = new RGBWColor(0, 0, 255, 255); // TODO: SET COLOR
+  /** Solid yellow (dim): intake state is "INTAKING" */
+  public static final RGBWColor kIntakeInColor = new RGBWColor(247, 233, 86, 100); // TODO: SET COLOR
+ 
 
   /** Strobe animation: manual override is on (Driver or operator) */
   public static final AnimationType kManualOverrideAnimation = AnimationType.SingleFade;
+  /** Strobe animation: manual override is on (Driver or operator) */
+  public static final AnimationType kLedAnimationActive = AnimationType.None;
   /** Rainbow animation: robot is disabled */
   public static final AnimationType kDisabledAnimation = AnimationType.None;
 

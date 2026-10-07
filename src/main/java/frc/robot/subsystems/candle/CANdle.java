@@ -1,13 +1,14 @@
 package frc.robot.subsystems.candle;
 
 import static frc.robot.subsystems.candle.CANdleConstants.AnimationType;
-import static frc.robot.subsystems.candle.CANdleConstants.kShootWhenReadyColor;
-import static frc.robot.subsystems.candle.CANdleConstants.kIdleColor;
+import static frc.robot.subsystems.candle.CANdleConstants.kIntakeInColor;
+import static frc.robot.subsystems.candle.CANdleConstants.kIntakeOutColor;
+import static frc.robot.subsystems.candle.CANdleConstants.kLedAnimationActive;
 import static frc.robot.subsystems.candle.CANdleConstants.kManualOverrideColor;
-import static frc.robot.subsystems.candle.CANdleConstants.kShootWhenReadyScheduledColor;
-import static frc.robot.subsystems.candle.CANdleConstants.kShootWhenReadyTempDisabledColor;
+import static frc.robot.subsystems.candle.CANdleConstants.kShootActiveColor;
 import static frc.robot.subsystems.candle.CANdleConstants.kManualOverrideAnimation;
 import static frc.robot.subsystems.candle.CANdleConstants.kDisabledAnimation;
+import static frc.robot.subsystems.candle.CANdleConstants.kHangActiveColor;
 
 import com.ctre.phoenix6.signals.RGBWColor;
 
@@ -29,8 +30,8 @@ public class CANdle extends SubsystemBase {
   private final CANdleIO candleIO;
   private final CANdleIO.CANdleIOInputs candleIOInputs = new CANdleIO.CANdleIOInputs();
 
-  private Shooter shooter;
   private Hang hang;
+  private Shooter shooter;
   private Intake intake;
 
   private BooleanSupplier manualOverrideSupplier = () -> false;
@@ -72,21 +73,30 @@ public class CANdle extends SubsystemBase {
       targetColor = kManualOverrideColor;
       ledState = "OverrideStrobe";
     } else if (hang.getState() != Hang.State.IDLE && hang.getState() != Hang.State.STORED) {
-      // red solid
+      // HANG ACTIVE
+      targetAnimation = kLedAnimationActive;
+      targetColor = kHangActiveColor;
+      ledState = "HangActive";
     } else if (shooter.isShootCommandActive()) {
-      // purple
+      // SHOOTING
+      targetAnimation = kLedAnimationActive;
+      targetColor = kShootActiveColor;
+      ledState = "ShootActive";
     } else if (intake.getState() == Intake.State.REVERSING ) {
-      // blue
+      // OUTTAKING
+      targetAnimation = kLedAnimationActive;
+      targetColor = kIntakeOutColor;
+      ledState = "Outtaking";
     } else if (intake.getState() == Intake.State.INTAKING) {
-      // dim yellow
+      // INTAKING
+      targetAnimation = kLedAnimationActive;
+      targetColor = kIntakeInColor;
+      ledState = "Intaking";
     } else {
       // DISABLED
       targetAnimation = kDisabledAnimation;
       ledState = "Disabled";
     }
-
-
-
     setLEDAnimation(targetAnimation);
     setLEDColor(targetColor);
     return ledState;
@@ -97,15 +107,15 @@ public class CANdle extends SubsystemBase {
     manualOverrideSupplier = supplier != null ? supplier : () -> false;
   } // End setManualOverrideSupplier
 
-  /** Set shooter subsystem */
-  public void setShooter(Shooter shooter) {
-    this.shooter = shooter;
-  } // End setShooter
-
   /** Set hang subsystem */
   public void setHang(Hang hang) {
     this.hang = hang;
   } // End setHang
+
+  /** Set shooter subsystem */
+  public void setShooter(Shooter shooter) {
+    this.shooter = shooter;
+  } // End setShooter
 
   /** Set intake subsystem */
   public void setIntake(Intake intake) {
