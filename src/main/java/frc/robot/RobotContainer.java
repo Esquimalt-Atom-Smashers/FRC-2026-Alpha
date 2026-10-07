@@ -383,9 +383,10 @@ public class RobotContainer {
 		turret.setAimAtTargetSupplier(() -> shootWhenReadyCommand.isScheduled());
 
 		// LED Subsystem
-		candle.setAutoShootEnabledSupplier(() -> autoShootEnabled);
 		candle.setManualOverrideSupplier(() -> RobotContainer.driverManualOverride || RobotContainer.operatorManualOverride);
 		candle.setShooter(shooter);
+		candle.setHang(hang);
+		candle.setIntake(intake);
 
 		/// -------------------------------------------------------------------------------------------
 		/// ------------------------------------ Logger Dashboard -------------------------------------

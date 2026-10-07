@@ -14,6 +14,9 @@ import com.ctre.phoenix6.signals.RGBWColor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.candle.CANdleConstants.AnimationType;
+import frc.robot.subsystems.hang.Hang;
+import frc.robot.subsystems.intake.Intake;
 
 import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.Logger;
@@ -27,9 +30,9 @@ public class CANdle extends SubsystemBase {
   private final CANdleIO.CANdleIOInputs candleIOInputs = new CANdleIO.CANdleIOInputs();
 
   private Shooter shooter;
+  private Hang hang;
+  private Intake intake;
 
-  private BooleanSupplier autoShootEnabledSupplier = () -> false;
-  private BooleanSupplier autoShootTempDisabledSupplier = () -> false;
   private BooleanSupplier manualOverrideSupplier = () -> false;
 
   public CANdle(CANdleIO io) {
@@ -58,65 +61,56 @@ public class CANdle extends SubsystemBase {
   /** Sets the color of the LEDs depending on what state the robot is in  */
   private String setCustomLEDColors() {
     boolean override = manualOverrideSupplier.getAsBoolean();
-    boolean shootReady = autoShootEnabledSupplier.getAsBoolean();
-    boolean shootTempDisabled = autoShootTempDisabledSupplier.getAsBoolean();
 
     AnimationType targetAnimation = AnimationType.None;
     RGBWColor targetColor = new RGBWColor(0, 0, 0, 0);
-    String ledState;
+    String ledState = "";
 
-    // Setting LED color/animation
     if (override) {
       // OVERRIDE STATES
       targetAnimation = kManualOverrideAnimation;
       targetColor = kManualOverrideColor;
       ledState = "OverrideStrobe";
-    } else if (shootReady && shooter != null) {
-      // SHOOTER STATES
-      if (shooter.isReadyToShoot()) {
-        targetColor = kShootWhenReadyColor;
-      ledState = "ShootingWhenReady";
-      } else if (shootTempDisabled) {
-        targetColor = kShootWhenReadyTempDisabledColor;
-        ledState = "ShootWhenReadyTempDisabled";
-      } else {
-        targetColor = kShootWhenReadyScheduledColor;
-        ledState = "ShootWhenReadyScheduled";
-      }
-    } else if (DriverStation.isEnabled()) {
-      // IDLE
-      targetColor = kIdleColor;
-      ledState = "EnabledIdle";
+    } else if (hang.getState() != Hang.State.IDLE && hang.getState() != Hang.State.STORED) {
+      // red solid
+    } else if (shooter.isShootCommandActive()) {
+      // purple
+    } else if (intake.getState() == Intake.State.REVERSING ) {
+      // blue
+    } else if (intake.getState() == Intake.State.INTAKING) {
+      // dim yellow
     } else {
       // DISABLED
       targetAnimation = kDisabledAnimation;
-      ledState = "DisabledRainbow";
+      ledState = "Disabled";
     }
+
+
 
     setLEDAnimation(targetAnimation);
     setLEDColor(targetColor);
     return ledState;
   } // End setCustomLEDColors
 
-  /** Supplier: true while {@link frc.robot.commands.autoShootEnabled} (or equivalent) is active. */
-  public void setAutoShootEnabledSupplier(BooleanSupplier supplier) {
-    autoShootEnabledSupplier = supplier != null ? supplier : () -> false;
-  } // End setAutoShootEnabledSupplier
-
   /** Supplier: true when driver or operator manual override should flash red. */
   public void setManualOverrideSupplier(BooleanSupplier supplier) {
     manualOverrideSupplier = supplier != null ? supplier : () -> false;
   } // End setManualOverrideSupplier
 
-  /** Supplier: true while in the trench  */
-  public void setAutoShootTempDisabledSupplier(BooleanSupplier supplier) {
-    autoShootTempDisabledSupplier = supplier != null ? supplier : () -> false;
-  } // End setAutoShootTempDisabledSupplier
-
   /** Set shooter subsystem */
   public void setShooter(Shooter shooter) {
     this.shooter = shooter;
   } // End setShooter
+
+  /** Set hang subsystem */
+  public void setHang(Hang hang) {
+    this.hang = hang;
+  } // End setHang
+
+  /** Set intake subsystem */
+  public void setIntake(Intake intake) {
+    this.intake = intake;
+  } // End setIntake
 
   /** Set the LEDs color to be used in the current animation */
   public void setLEDColor(RGBWColor colour) {

@@ -33,7 +33,7 @@ public class CANdleConstants {
   /** Strobe animation: manual override is on (Driver or operator) */
   public static final AnimationType kManualOverrideAnimation = AnimationType.SingleFade;
   /** Rainbow animation: robot is disabled */
-  public static final AnimationType kDisabledAnimation = AnimationType.Rainbow;
+  public static final AnimationType kDisabledAnimation = AnimationType.None;
 
   /**
   * LED Animation type
