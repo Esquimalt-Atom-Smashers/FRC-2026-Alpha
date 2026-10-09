@@ -9,6 +9,7 @@ import static frc.robot.subsystems.candle.CANdleConstants.kShootActiveColor;
 import static frc.robot.subsystems.candle.CANdleConstants.kManualOverrideAnimation;
 import static frc.robot.subsystems.candle.CANdleConstants.kDisabledAnimation;
 import static frc.robot.subsystems.candle.CANdleConstants.kHangActiveColor;
+import static frc.robot.subsystems.candle.CANdleConstants.kIdleColor;
 
 import com.ctre.phoenix6.signals.RGBWColor;
 
@@ -92,6 +93,11 @@ public class CANdle extends SubsystemBase {
       targetAnimation = kLedAnimationActive;
       targetColor = kIntakeInColor;
       ledState = "Intaking";
+    } else if (DriverStation.isEnabled()) {
+      // IDLE
+      targetAnimation = kLedAnimationActive;
+      targetColor = kIdleColor;
+      ledState = "EnabledIdle";
     } else {
       // DISABLED
       targetAnimation = kDisabledAnimation;

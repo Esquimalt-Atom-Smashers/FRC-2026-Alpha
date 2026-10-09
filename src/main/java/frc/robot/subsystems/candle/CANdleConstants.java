@@ -29,6 +29,8 @@ public class CANdleConstants {
   public static final RGBWColor kIntakeOutColor = new RGBWColor(0, 0, 255, 255); // TODO: SET COLOR
   /** Solid yellow (dim): intake state is "INTAKING" */
   public static final RGBWColor kIntakeInColor = new RGBWColor(247, 233, 86, 100); // TODO: SET COLOR
+  /** Solid orange: default enabled idle indication */
+  public static final RGBWColor kIdleColor = new RGBWColor(255, 40, 0, 255);
  
 
   /** Strobe animation: manual override is on (Driver or operator) */
@@ -36,7 +38,7 @@ public class CANdleConstants {
   /** Strobe animation: manual override is on (Driver or operator) */
   public static final AnimationType kLedAnimationActive = AnimationType.None;
   /** Rainbow animation: robot is disabled */
-  public static final AnimationType kDisabledAnimation = AnimationType.None;
+  public static final AnimationType kDisabledAnimation = AnimationType.Rainbow;
 
   /**
   * LED Animation type
